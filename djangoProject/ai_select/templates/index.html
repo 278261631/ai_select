@@ -5,8 +5,18 @@
 </head>
 <body>
     <h2>Index Page</h2>
+    <p>Current Date: {{ current_date }}</p>
+    <p>Current Time: {{ current_time }}</p>
+    <p>Current Weekday: {{ current_weekday }}</p>
+    <p>Current Timezone: {{ current_timezone }}</p>
     {% if user.is_authenticated %}
         <p>Welcome, {{ user.username }}! <a href="{% url 'admin:logout' %}">Logout</a></p>
+        <h3>Directories:</h3>
+        <ul>
+            {% for directory, is_date, formatted_date in directories %}
+                <li><button onclick="window.location.href='{% url 'directory_detail' directory %}'">{{ directory }} : [{{ formatted_date }}]</button></li>
+            {% endfor %}
+        </ul>
     {% else %}
         <p><a href="{% url 'admin:login' %}">Login</a></p>
     {% endif %}

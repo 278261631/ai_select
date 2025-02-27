@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Directory Detail</title>
+</head>
+<body>
+    <h2>Directory: {{ directory_name }}</h2>
+    <p><a href="{% url 'index' %}">Back to Index</a></p>
+    <h3>Contents:</h3>
+    <ul>
+        {% for item in items %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

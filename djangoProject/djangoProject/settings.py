@@ -124,3 +124,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# 添加目录根路径配置
+DIRECTORY_ROOT = 'E:/HMT-backend/detect'

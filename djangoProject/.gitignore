@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+
+# IDE files
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Databases
+db.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+
+# Django secret key file
+secret_key.txt

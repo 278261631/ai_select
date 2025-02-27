@@ -1,24 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% load static %}
     <title>Index</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}">
+    <script src="{% static 'admin/js/jquery.min.js' %}"></script>
+    <script src="{% static 'admin/js/core.js' %}"></script>
+    <script src="{% static 'admin/js/admin/RelatedObjectLookup.js' %}"></script>
+    <script src="{% static 'admin/js/actions.js' %}"></script>
+    <script src="{% static 'admin/js/urlify.js' %}"></script>
+    <script src="{% static 'admin/js/prepopulate.js' %}"></script>
+    <script src="{% static 'admin/js/vendor/xregexp/xregexp.min.js' %}"></script>
+    <script src="{% static 'admin/js/vendor/xregexp/xregexp.install.js' %}"></script>
 </head>
 <body>
-    <h2>Index Page</h2>
-    <p>Current Date: {{ current_date }}</p>
-    <p>Current Time: {{ current_time }}</p>
-    <p>Current Weekday: {{ current_weekday }}</p>
-    <p>Current Timezone: {{ current_timezone }}</p>
-    {% if user.is_authenticated %}
-        <p>Welcome, {{ user.username }}! <a href="{% url 'admin:logout' %}">Logout</a></p>
-        <h3>Directories:</h3>
-        <ul>
-            {% for directory, is_date, formatted_date in directories %}
-                <li><button onclick="window.location.href='{% url 'directory_detail' directory %}'">{{ directory }} : [{{ formatted_date }}]</button></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p><a href="{% url 'admin:login' %}">Login</a></p>
-    {% endif %}
+    <div id="container">
+        <div id="header">
+            <div id="branding">
+                <h1 id="site-name"><a href="{% url 'index' %}">HMT AI select</a></h1>
+            </div>
+            <div id="user-tools">
+                {% if user.is_authenticated %}
+                    Welcome, <strong>{{ user.username }}</strong>. <a href="{% url 'admin:logout' %}">Log out</a>
+                {% else %}
+                    <a href="{% url 'admin:login' %}">Log in</a>
+                {% endif %}
+            </div>
+        </div>
+        <div id="content" class="flex">
+            <div id="content-main">
+                <h2>Index Page</h2>
+                <p>Current Date: {{ current_date }}</p>
+                <p>Current Time: {{ current_time }}</p>
+                <p>Current Weekday: {{ current_weekday }}</p>
+                <p>Current Timezone: {{ current_timezone }}</p>
+                {% if user.is_authenticated %}
+                    <p>Welcome, {{ user.username }}! <a href="{% url 'admin:logout' %}">Logout</a></p>
+                    <h3>Directories:</h3>
+                    <ul>
+                        {% for directory, is_date, formatted_date in directories %}
+                            <li><button onclick="window.location.href='{% url 'directory_detail' directory %}'">{{ directory }} : [{{ formatted_date }}]</button></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p><a href="{% url 'admin:login' %}">Login</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </body>
 </html>

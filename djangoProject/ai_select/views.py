@@ -58,6 +58,8 @@ def directory_detail_view(request, directory_name):
     # 读取Excel文件并提取第三列内容
     if os.path.exists(excel_file_path):
         df = pd.read_excel(excel_file_path)
+        # 替换所有NaN值为空字符串
+        df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
         if df.shape[1] >= 3:  # 确保Excel文件有至少三列
             third_column = df.iloc[:, 2].tolist()

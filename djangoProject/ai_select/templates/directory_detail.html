@@ -31,6 +31,13 @@
             </div>
         </div>
         <div id="content" class="flex">
+            <form>
+                {% for item, count in third_column.items %}
+                    <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}">
+                    <label for="{{ item }}">{{ item }} [{{ count }}]</label><br>
+                {% endfor %}
+            </form>
+
             <div id="content-main">
                 <h2>Directory: {{ directory_name }}</h2>
                 <p><a href="{% url 'index' %}">Back to Index</a></p>

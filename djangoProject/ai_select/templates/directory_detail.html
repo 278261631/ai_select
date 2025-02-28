@@ -15,6 +15,32 @@
     <script src="{% static 'admin/js/prepopulate.js' %}"></script>
     <script src="{% static 'admin/js/vendor/xregexp/xregexp.min.js' %}"></script>
     <script src="{% static 'admin/js/vendor/xregexp/xregexp.install.js' %}"></script>
+    <script>
+        function showColumn(columnValue) {
+            var columnContent = document.getElementById('column-content');
+            columnContent.innerHTML = ''; // 清空现有内容
+
+            // 获取所有Excel数据行
+            var rows = document.querySelectorAll('.excel-data-container tbody tr');
+
+            // 遍历所有行，根据columnValue进行过滤
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll('td');
+                var shouldShow = false;
+                cells.forEach(function(cell) {
+                    if (cell.textContent === columnValue) {
+                        shouldShow = true;
+                    }
+                });
+
+                // 根据过滤结果显示或隐藏行
+                row.style.display = shouldShow ? '' : 'none';
+            });
+
+            // 显示过滤后的内容
+            columnContent.style.display = 'block';
+        }
+    </script>
 </head>
 <body>
     <div id="container">
@@ -33,7 +59,7 @@
         <div id="content" class="flex">
             <form>
                 {% for item, count in third_column.items %}
-                    <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}">
+                    <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="showColumn(this.value)">
                     <label for="{{ item }}">{{ item }} [{{ count }}]</label><br>
                 {% endfor %}
             </form>
@@ -42,11 +68,32 @@
                 <h2>Directory: {{ directory_name }}</h2>
                 <p><a href="{% url 'index' %}">Back to Index</a></p>
                 <h3>Contents:</h3>
-                <ul>
-                    {% for item in items %}
-{#                        <li>{{ item }}</li>#}
-                    {% endfor %}
+                <ul id="column-content" style="display: none;">
+                    <!-- 动态内容将显示在这里 -->
                 </ul>
+
+                <!-- 新增的Excel数据内容 -->
+                <div class="excel-data-container">
+                    <h3>Excel Data:</h3>
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                {% for column in excel_data.0.keys %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in excel_data %}
+                                <tr>
+                                    {% for value in row.values %}
+                                        <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- 新增的图片设计内容 -->
                 <div class="image-container">

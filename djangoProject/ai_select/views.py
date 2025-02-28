@@ -58,12 +58,14 @@ def directory_detail_view(request, directory_name):
     # 读取Excel文件并提取第三列内容
     if os.path.exists(excel_file_path):
         df = pd.read_excel(excel_file_path)
+        excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
         if df.shape[1] >= 3:  # 确保Excel文件有至少三列
             third_column = df.iloc[:, 2].tolist()
         else:
             third_column = []
     else:
         third_column = []
+        excel_data = []
 
     # 第三列的内容需要分组
     # 初始化 内容 REVIEW   FALSE   UNDETECT   TRUE   LINE
@@ -85,5 +87,6 @@ def directory_detail_view(request, directory_name):
         'directory_name': directory_name,
         'items': items,
         'third_column': grouped_third_column,  # 添加第三列内容到context
+        'excel_data': excel_data,  # 添加Excel数据到context
     }
     return render(request, 'directory_detail.html', context)

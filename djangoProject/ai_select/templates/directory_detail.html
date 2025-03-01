@@ -20,6 +20,10 @@
         const $ = django.jQuery;
         window.excelData = {{ excel_data|safe }};
         let current_index = 0;
+        const color_false = `rgba(155, 10, 10, 1)`;
+        const color_line = `rgba(200, 150, 0, 1)`;
+        const color_review = `rgba(10, 150, 200, 1)`;
+        const color_true = `rgba(0, 150, 0, 1)`;
 
         function showColumn(columnValue) {
             const excelData = window.excelData;
@@ -27,125 +31,144 @@
             console.log("showColumn "  + " " + current_index);
             if (excelData && excelData.length > 0) {
                 const row = excelData[current_index];
+                console.log("row:", row)
                 // 判断columnValue 是否是空字符
-                if (columnValue === '' || columnValue === row[Object.keys(row)[2]]) {
-                     console.log("navigate "  + " " + current_index);
-                     $('#column-content').append('<li>' + row[Object.keys(row)[0]] + " " + row[Object.keys(row)[0]] + '</li>');
-                     // 获取概率值
-                     let probabilities = row["Probabilities"];
-                     console.log("Probabilities:", probabilities);
-                     
-                     // 检查 probabilities 是否为字符串并转换为数组
-                     if (typeof probabilities === 'string') {
-                         // 替换probabilities 的 '  为 ''
-                         probabilities = probabilities.replace(/'/g, '"');
-                         console.log("Replaced probabilities:", probabilities);
 
-                         try {
-                             probabilities = JSON.parse(probabilities);
-                         } catch (e) {
-                             console.error("Error parsing probabilities JSON:", e);
-                             probabilities = [];
-                         }
+                 console.log("navigate "  + " " + current_index);
+                 // 根据 row["Category"] 设置 column-content 的背景颜色
+                 let categoryColor = '';
+                 console.log("row['Category']:", row["Category"])
+                 switch (row["Category"]) {
+                     case 'FALSE':
+                         categoryColor = color_false;
+                         break;
+                     case 'LINE':
+                         categoryColor = color_line;
+                         break;
+                     case 'REVIEW':
+                         categoryColor = color_review;
+                         break;
+                     case 'TRUE':
+                         categoryColor = color_true;
+                         break;
+                     default:
+                         categoryColor = 'white';
+                 }
+                 $('#column-content').css('color', categoryColor);
+                 $('#column-content').append('<li> [ ' + row["row_number"] + " ] : " + row["Filename"] + '</li>');
+
+                 // 获取概率值
+                 let probabilities = row["Probabilities"];
+                 {#console.log("Probabilities:", probabilities);#}
+
+                 // 检查 probabilities 是否为字符串并转换为数组
+                 if (typeof probabilities === 'string') {
+                     // 替换probabilities 的 '  为 ''
+                     probabilities = probabilities.replace(/'/g, '"');
+                     {#console.log("Replaced probabilities:", probabilities);#}
+
+                     try {
+                         probabilities = JSON.parse(probabilities);
+                     } catch (e) {
+                         console.error("Error parsing probabilities JSON:", e);
+                         probabilities = [];
                      }
-                     console.log("Probabilities:", probabilities);
-                     // 显示概率值
-                     const probabilitiesContainer = $('.Probabilities-container');
-                     probabilitiesContainer.empty();
-                      // probabilities 是一个json对象，包含四个概率值 获取它们并转换为数字
-                     let probabilitiesArray = [
-                         parseFloat(probabilities.false),
-                         parseFloat(probabilities.B),
-                         parseFloat(probabilities.C),
-                         parseFloat(probabilities.D)
-                     ];
-                     console.log(parseFloat(probabilities.false))
-                     console.log(parseFloat(probabilities.line))
-                     console.log(parseFloat(probabilities.review))
-                     console.log(parseFloat(probabilities.true))
-                     let p_false  = parseFloat(probabilities.false)
-                     let p_line   = parseFloat(probabilities.line)
-                     let p_review = parseFloat(probabilities.review)
-                     let p_true   = parseFloat(probabilities.true)
-                     const color_false = `rgba(255, 0, 0, 1)`; // 使用红色，透明度固定为1
-                     probabilitiesContainer.append(`
-                         <div>
-                             <div style="width: ${p_false*4 +80}px; height: 20px; background-color: ${color_false};"></div>
-                             <span>false：${p_false.toFixed(2)}</span>
-                         </div>
-                     `);
-                     const color_line = `rgba(200, 200, 0, 1)`; // 使用绿色，透明度固定为1
-                     probabilitiesContainer.append(`
-                         <div>
-                             <div style="width: ${p_line*4 +80}px; height: 20px; background-color: ${color_line};"></div>
-                             <span>line：${p_line.toFixed(2)}</span>
-                         </div>
-                     `);
-                     const color_review = `rgba(0, 0, 255, 1)`; // 使用蓝色，透明度固定为1
-                     probabilitiesContainer.append(`
-                         <div>
-                             <div style="width: ${p_review*4 +80}px; height: 20px; background-color: ${color_review};"></div>
-                             <span>review：${p_review.toFixed(2)}</span>
-                         </div>
-                     `);
-                     const color_true = `rgba(0, 200, 0, 1)`; // 使用灰色，透明度固定为1
-                     probabilitiesContainer.append(`
-                         <div>
-                             <div style="width: ${p_true*4 +80}px; height: 20px; background-color: ${color_true};"></div>
-                             <span>true：${p_true.toFixed(2)}</span>
-                         </div>
-                     `);
+                 }
+                 {#console.log("Probabilities:", probabilities);#}
+                 // 显示概率值
+                 const probabilitiesContainer = $('.Probabilities-container');
+                 probabilitiesContainer.empty();
+                  // probabilities 是一个json对象，包含四个概率值 获取它们并转换为数字
+                 let probabilitiesArray = [
+                     parseFloat(probabilities.false),
+                     parseFloat(probabilities.B),
+                     parseFloat(probabilities.C),
+                     parseFloat(probabilities.D)
+                 ];
+                 {#console.log(parseFloat(probabilities.false))#}
+                 {#console.log(parseFloat(probabilities.line))#}
+                 {#console.log(parseFloat(probabilities.review))#}
+                 {#console.log(parseFloat(probabilities.true))#}
+                 let p_false  = parseFloat(probabilities.false)
+                 let p_line   = parseFloat(probabilities.line)
+                 let p_review = parseFloat(probabilities.review)
+                 let p_true   = parseFloat(probabilities.true)
+
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_false*4 +80}px; height: 20px; background-color: ${color_false};"></div>
+                         <span>false：${p_false.toFixed(2)}</span>
+                     </div>
+                 `);
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_line*4 +80}px; height: 20px; background-color: ${color_line};"></div>
+                         <span>line：${p_line.toFixed(2)}</span>
+                     </div>
+                 `);
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_review*4 +80}px; height: 20px; background-color: ${color_review};"></div>
+                         <span>review：${p_review.toFixed(2)}</span>
+                     </div>
+                 `);
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_true*4 +80}px; height: 20px; background-color: ${color_true};"></div>
+                         <span>true：${p_true.toFixed(2)}</span>
+                     </div>
+                 `);
 
 
-                     //在download-container 中给出下载图片的链接， 链接是row["Download_Path"]
-                     const fileName = row["Download_Path"].split('\\').pop().split('/').pop(); // 兼容 Windows 和 Unix 路径分隔符
-                     $('.download-container').empty();
-                     $('.download-container').append(`
-                         <a href="${row["Download_Path"]}" target="_blank">
-                             <button class="btn btn-primary">下载 ${fileName}</button>
-                         </a>
-                     `);
+                 //在download-container 中给出下载图片的链接， 链接是row["Download_Path"]
+                 const fileName = row["Download_Path"].split('\\').pop().split('/').pop(); // 兼容 Windows 和 Unix 路径分隔符
+                 $('.download-container').empty();
+                 $('.download-container').append(`
+                     <a href="${row["Download_Path"]}" target="_blank">
+                         <button class="btn btn-primary">下载 ${fileName}</button>
+                     </a>
+                 `);
 
 
-                     
-                     // 新增代码：通过AJAX请求获取静态图路径
-                     $.ajax({
-                         url: '{% url "get_image_data" %}',
-                         type: 'POST',
-                         data: JSON.stringify({ a_img_value: row["A_Image_Path"] }),
-                         contentType: 'application/json',
-                         success: function(response) {
-                             $('#static-image').attr('src', 'data:image/png;base64,'+response.image_data);
-                         },
-                         error: function(xhr, status, error) {
-                             console.error("Error fetching static image path:", error);
-                         }
-                     });
-                     $.ajax({
-                         url: '{% url "get_image_data" %}',
-                         type: 'POST',
-                         data: JSON.stringify({ a_img_value: row["B_Image_Path"] }),
-                         contentType: 'application/json',
-                         success: function(response) {
-                             $('#new-image').attr('src', 'data:image/png;base64,'+response.image_data);
-                         },
-                         error: function(xhr, status, error) {
-                             console.error("Error fetching static image path:", error);
-                         }
-                     });
-                     $.ajax({
-                         url: '{% url "get_image_data" %}',
-                         type: 'POST',
-                         data: JSON.stringify({ a_img_value: row["C_Image_Path"] }),
-                         contentType: 'application/json',
-                         success: function(response) {
-                             $('#hist-image').attr('src', 'data:image/png;base64,'+response.image_data);
-                         },
-                         error: function(xhr, status, error) {
-                             console.error("Error fetching static image path:", error);
-                        }
-                     });
-                }
+
+                 // 新增代码：通过AJAX请求获取静态图路径
+                 $.ajax({
+                     url: '{% url "get_image_data" %}',
+                     type: 'POST',
+                     data: JSON.stringify({ a_img_value: row["A_Image_Path"] }),
+                     contentType: 'application/json',
+                     success: function(response) {
+                         $('#static-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error fetching static image path:", error);
+                     }
+                 });
+                 $.ajax({
+                     url: '{% url "get_image_data" %}',
+                     type: 'POST',
+                     data: JSON.stringify({ a_img_value: row["B_Image_Path"] }),
+                     contentType: 'application/json',
+                     success: function(response) {
+                         $('#new-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error fetching static image path:", error);
+                     }
+                 });
+                 $.ajax({
+                     url: '{% url "get_image_data" %}',
+                     type: 'POST',
+                     data: JSON.stringify({ a_img_value: row["C_Image_Path"] }),
+                     contentType: 'application/json',
+                     success: function(response) {
+                         $('#hist-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error fetching static image path:", error);
+                    }
+                 });
+
             }
         }
 
@@ -162,16 +185,49 @@
             }
         };
 
+        function radio_click_init() {
+            current_index = 0;
+            navigate("next");
+        }
         function navigate(direction) {
             const excelData = window.excelData;
-            if (excelData && excelData.length > 0) {
-                if (direction === 'next' && current_index < excelData.length - 1) {
-                    current_index++;
-                } else if (direction === 'prev' && current_index > 0) {
-                    current_index--;
+            const radioValue = $('input[name="third_column"]:checked').val()
+            console.log("radio: " + radioValue)
+
+            if (!radioValue || radioValue === '') {
+                if (excelData && excelData.length > 0) {
+                    if (direction === 'next' && current_index < excelData.length - 1) {
+                        current_index++;
+                    } else if (direction === 'prev' && current_index > 0) {
+                        current_index--;
+                    }
+                    console.log("navigate " + direction + " " + current_index);
+                    console.log("current_index 1: " + current_index);
+                    showColumn('');
                 }
-                console.log("navigate " + direction + " " + current_index);
-                showColumn('');
+            }else {
+                if (direction === 'next') {
+                    for (let i = current_index+1; i < excelData.length; i++) {
+                        let row = excelData[i];
+                        console.log(radioValue +  " + " + row["Category"])
+                        if (radioValue === row["Category"]) {
+                            current_index = i;
+                            break;
+                        }
+                    }
+                }else if (direction === 'prev' && current_index > 0) {
+                    for (let i = current_index-1; i >0; i--) {
+                        let row = excelData[i];
+                        console.log(radioValue +  " - " + row["Category"])
+                        if (radioValue === row["Category"]) {
+                            current_index = i;
+                            break;
+                        }
+                    }
+                }
+
+                console.log("current_index 2: " + current_index)
+                showColumn(radioValue);
             }
         }
 
@@ -204,6 +260,7 @@
                         break;
                 }
             });
+            showColumn("");
         });
     </script>
 </head>
@@ -215,33 +272,31 @@
             </div>
             <div id="user-tools">
                 {% if user.is_authenticated %}
-                    Welcome, <strong>{{ user.username }}</strong>. <a href="{% url 'admin:logout' %}">Log out</a>
+                    [<strong>{{ user.username }}</strong>] | <a href="{% url 'admin:logout' %}"> [退出]</a>
                 {% else %}
                     <a href="{% url 'admin:login' %}">Log in</a>
                 {% endif %}
             </div>
         </div>
         <div id="content" class="flex">
+            <h2>Directory: {{ directory_name }}</h2>
+            <p><a href="{% url 'index' %}">Back to Index</a></p>
             <form style="display: flex; flex-direction: row;">
                 {% for item, count in third_column.items %}
                     <div style="margin-right: 10px;">
-                        <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="showColumn(this.value)">
+                        <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="radio_click_init()">
                         <label for="{{ item }}">{{ item }} [{{ count }}]</label>
                     </div>
                 {% endfor %}
             </form>
 
             <div id="content-main">
-                <h2>Directory: {{ directory_name }}</h2>
-                <p><a href="{% url 'index' %}">Back to Index</a></p>
-                <h3>Contents:</h3>
-                <ul id="column-content" >
-
-                </ul>
-
                 <!-- 新增的按钮 -->
-                <button onclick="navigate('prev')">上一个（键盘左）</button>
-                <button onclick="navigate('next')">下一个（键盘右）</button>
+                <div style="display: flex;">
+                    <button onclick="navigate('prev')">上一个（键盘左）</button>
+                    <button onclick="navigate('next')">下一个（键盘右）</button>
+                    <ul id="column-content" ></ul>
+                </div>
                 <!-- 新增的图片设计内容 -->
                 <div class="image-container">
                     <div style="display: inline-block; margin-right: 20px;">
@@ -255,25 +310,30 @@
                     </div>
                 </div>
 
-                <div class="Probabilities-container" style="display: flex; flex-direction: row;">
-                    <h3>各概率值，四个值</h3>
-                    <p>直接调用excel文件的Probabilities值</p>
+                <div style="display: flex;">
+                    <div class="Probabilities-container" style="display: flex; flex-direction: row;">
+                        <h3>各概率值，四个值</h3>
+                        <p>直接调用excel文件的Probabilities值</p>
+                    </div>
+
+                    <div class="download-container" style="margin-left: 20px;">
+                        <h3>下载原图（链接）</h3>
+                        <a href="" download>Download Original Image</a>
+                    </div>
                 </div>
 
-                <div class="download-container">
-                    <h3>下载原图（链接）</h3>
-                    <a href="" download>Download Original Image</a>
-                </div>
+                <div style="display: flex;">
+                    <div class="image-comment-container">
+                        <h3>备注：</h3>
+                        <textarea id="image-comment" rows="4" cols="50"></textarea>
+                        <p>用户判断的备注，比如确认这个是某个小行星或者某个变星编号</p>
+                    </div>
 
-                <div class="true-false-container">
-                    <h3>分类判断是否正确按钮</h3>
-                    <button onclick="alert('Correct')">正确</button>
-                    <button onclick="alert('Incorrect')">错误</button>
-                </div>
-
-                <div class="image-comment-container">
-                    <h3>备注：</h3>
-                    <p>应该是用户判断的备注，比如确认这个是某个小行星或者某个变星编号，用户可写可不写</p>
+                    <div class="true-false-container" style="margin-left: 100px;">
+                        <h3>分类判断是否正确按钮</h3>
+                        <button onclick="alert('Correct')">正确</button>
+                        <button onclick="alert('Incorrect')">错误</button>
+                    </div>
                 </div>
 
                 <div class="image-container">

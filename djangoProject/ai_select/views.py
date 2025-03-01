@@ -67,7 +67,8 @@ def directory_detail_view(request, directory_name):
         df = pd.read_excel(excel_file_path)
         # 替换所有NaN值为空字符串
         # df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
-        df = df.fillna("-")
+        # df = df.fillna("-")
+        df = df.fillna("")
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
         # 添加序列号
         for i, item in enumerate(excel_data, start=1):
@@ -132,3 +133,41 @@ def get_image_data(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+@csrf_exempt  # 确保可以接收POST请求
+def save_change(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            filename = data.get('row_filename')
+            row_index = data.get('row_index')
+            type_value = data.get('type_value')
+            comment_txt = data.get('comment_txt')
+            directory_name = data.get('directory_name')
+
+            directory_root = settings.DIRECTORY_ROOT
+            directory_path = os.path.join(directory_root, directory_name)
+            excel_file_path = os.path.join(directory_path, settings.EXCEL_FILE_NAME)
+            if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+                return render(request, '404.html')  # 或者自定义错误页面
+
+            # 读取Excel文件并提取第三列内容
+            if os.path.exists(excel_file_path):
+                df = pd.read_excel(excel_file_path)
+                df = df.fillna("-")
+
+                fn = df.at[row_index, 'Filename']
+                if fn == filename:
+                    df.at[row_index, 'Category'] = type_value
+                    # 如果没有Category列，则添加该列
+                    if 'comment' not in df.columns:
+                        df['comment'] = ''
+                    df.at[row_index, 'comment'] = comment_txt
+                    df.to_excel(excel_file_path, index=False)
+                else:
+                    return JsonResponse({'error': 'filename not match'}, status=400)
+
+            return JsonResponse({'success': 'Changes saved successfully'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/jquery.toast.min.css' %}">
     <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'admin/js/jquery.init.js' %}"></script>
     <script src="{% static 'admin/js/core.js' %}"></script>
@@ -15,6 +16,7 @@
     <script src="{% static 'admin/js/urlify.js' %}"></script>
     <script src="{% static 'admin/js/prepopulate.js' %}"></script>
     <script src="{% static 'admin/js/vendor/xregexp/xregexp.min.js' %}"></script>
+    <script src="{% static 'admin/js/vendor/jquery/jquery.toast.min.js' %}"></script>
 
     <script>
         const $ = django.jQuery;
@@ -41,21 +43,31 @@
                  switch (row["Category"]) {
                      case 'FALSE':
                          categoryColor = color_false;
+                         $('input[name="new_third_column"][value="' + row["Category"] + '"]').prop('checked', true);
                          break;
                      case 'LINE':
                          categoryColor = color_line;
+                         $('input[name="new_third_column"][value="' + row["Category"] + '"]').prop('checked', true);
                          break;
                      case 'REVIEW':
                          categoryColor = color_review;
+                         $('input[name="new_third_column"][value="' + row["Category"] + '"]').prop('checked', true);
                          break;
                      case 'TRUE':
                          categoryColor = color_true;
+                         $('input[name="new_third_column"][value="' + row["Category"] + '"]').prop('checked', true);
                          break;
                      default:
                          categoryColor = 'white';
                  }
-                 $('#column-content').css('color', categoryColor);
-                 $('#column-content').append('<li> [ ' + row["row_number"] + " ] : " + row["Filename"] + '</li>');
+
+                $('#new_FALSE_label').css("color", color_false);
+                $('#new_LINE_label').css("color", color_line);
+                $('#new_REVIEW_label').css("color", color_review);
+                $('#new_TRUE_label').css("color", color_true);
+                $('#column-content').css('color', categoryColor);
+                $('#column-content').append('<li> [ ' + row["row_number"] + " ] : " + row["Filename"] + '</li>');
+                $('#image-comment').val(row["comment"]);
 
                  // 获取概率值
                  let probabilities = row["Probabilities"];
@@ -70,6 +82,7 @@
                      try {
                          probabilities = JSON.parse(probabilities);
                      } catch (e) {
+                         console.error(probabilities);
                          console.error("Error parsing probabilities JSON:", e);
                          probabilities = [];
                      }
@@ -189,6 +202,42 @@
             current_index = 0;
             navigate("next");
         }
+        function save_change() {
+            const new_radioValue = $('input[name="new_third_column"]:checked').val();
+            const new_comment = $('#image-comment').val();
+            const row = excelData[current_index];
+            $.ajax({
+                 url: '{% url "save_change" %}',
+                 type: 'POST',
+                 data: JSON.stringify({ row_filename: row["Filename"], row_index: current_index,
+                     type_value: new_radioValue, comment_txt: new_comment, directory_name: "{{ directory_name }}" }),
+                 contentType: 'application/json',
+                 success: function(response) {
+                     // 添加一个提示泡， 使用自动消失的提示框
+                     $.toast({
+                         heading: 'Success',
+                         text: 'Changes saved successfully!',
+                         position: 'top-right',
+                         loaderBg: '#ff6849',
+                         icon: 'success',
+                         hideAfter: 3000,
+                         stack: 6
+                     });
+                 },
+                 error: function(xhr, status, error) {
+                     console.error("Error fetching static image path:", error);
+                     $.toast({
+                         heading: 'Error',
+                         text: 'Failed to save changes.',
+                         position: 'top-right',
+                         loaderBg: '#ff6849',
+                         icon: 'error',
+                         hideAfter: 3000,
+                         stack: 6
+                     });
+                }
+            });
+        }
         function navigate(direction) {
             const excelData = window.excelData;
             const radioValue = $('input[name="third_column"]:checked').val()
@@ -279,8 +328,8 @@
             </div>
         </div>
         <div id="content" class="flex">
-            <h2>Directory: {{ directory_name }}</h2>
-            <p><a href="{% url 'index' %}">Back to Index</a></p>
+            <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
+
             <form style="display: flex; flex-direction: row;">
                 {% for item, count in third_column.items %}
                     <div style="margin-right: 10px;">
@@ -326,13 +375,43 @@
                     <div class="image-comment-container">
                         <h3>备注：</h3>
                         <textarea id="image-comment" rows="4" cols="50"></textarea>
-                        <p>用户判断的备注，比如确认这个是某个小行星或者某个变星编号</p>
+                        <p>判断的备注，比如确认这个是某个小行星或者某个变星编号</p>
                     </div>
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
+
                         <button onclick="alert('Correct')">正确</button>
                         <button onclick="alert('Incorrect')">错误</button>
+                        <button onclick="save_change()">修改</button>
+                    </div>
+                    <div style="display: flex; flex-direction: row;margin-left: 100px;">
+
+                        <div style="margin-right: 10px;">
+                            <input type="radio" id="new_REVIEW" name="new_third_column" value="REVIEW" onclick="new_type_click(this.value)">
+                            <label for="new_REVIEW" id="new_REVIEW_label">REVIEW</label>
+                        </div>
+
+                        <div style="margin-right: 10px;">
+                            <input type="radio" id="new_FALSE" name="new_third_column" value="FALSE" onclick="new_type_click(this.value)">
+                            <label for="new_FALSE" id="new_FALSE_label">FALSE</label>
+                        </div>
+
+                        <div style="margin-right: 10px;">
+                            <input type="radio" id="new_UNDETECT" name="new_third_column" value="UNDETECT" onclick="new_type_click(this.value)">
+                            <label for="new_UNDETECT" id="new_UNDETECT_label">UNDETECT</label>
+                        </div>
+
+                        <div style="margin-right: 10px;">
+                            <input type="radio" id="new_TRUE" name="new_third_column" value="TRUE" onclick="new_type_click(this.value)">
+                            <label for="new_TRUE" id="new_TRUE_label">TRUE</label>
+                        </div>
+
+                        <div style="margin-right: 10px;">
+                            <input type="radio" id="new_LINE" name="new_third_column" value="LINE" onclick="new_type_click(this.value)">
+                            <label for="new_LINE" id="new_LINE_label">LINE</label>
+                        </div>
+
                     </div>
                 </div>
 

@@ -7,39 +7,63 @@
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}">
-    <script src="{% static 'admin/js/jquery.min.js' %}"></script>
+    <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'admin/js/jquery.init.js' %}"></script>
     <script src="{% static 'admin/js/core.js' %}"></script>
-    <script src="{% static 'admin/js/admin/RelatedObjectLookup.js' %}"></script>
+    <script src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
     <script src="{% static 'admin/js/actions.js' %}"></script>
     <script src="{% static 'admin/js/urlify.js' %}"></script>
     <script src="{% static 'admin/js/prepopulate.js' %}"></script>
     <script src="{% static 'admin/js/vendor/xregexp/xregexp.min.js' %}"></script>
-    <script src="{% static 'admin/js/vendor/xregexp/xregexp.install.js' %}"></script>
+
     <script>
+        const $ = django.jQuery;
+        window.excelData = {{ excel_data|safe }};
+        let current_index = 0;
+
         function showColumn(columnValue) {
-            var columnContent = document.getElementById('column-content');
-            columnContent.innerHTML = ''; // 清空现有内容
+            const excelData = window.excelData;
+            $('#column-content').empty();
+             console.log("showColumn "  + " " + current_index);
+            if (excelData && excelData.length > 0) {
+                const row = excelData[current_index];
+                // 判断columnValue 是否是空字符
+                if (columnValue === '' || columnValue === row[Object.keys(row)[2]]) {
+                     console.log("navigate "  + " " + current_index);
+                     $('#column-content').append('<li>' + row[Object.keys(row)[0]] + " " + row[Object.keys(row)[0]] + '</li>');
 
-            // 获取所有行数据
-            var rows = document.querySelectorAll('#excel-table tr');
+                }
 
-            // 遍历每一行
-            rows.forEach(function(row) {
-                var cells = row.querySelectorAll('td');
+            }
 
-                // 遍历当前行的单元格，查找匹配的列值
-                cells.forEach(function(cell) {
-                    if (cell.textContent === columnValue) {
-                        // 如果找到匹配的值，将其添加到column-content中
-                        var li = document.createElement('li');
-                        li.textContent = cell.textContent;
-                        columnContent.appendChild(li);
-                    }
-                });
-            });
 
-            // 显示过滤后的内容
-            columnContent.style.display = 'block';
+
+        }
+
+        // 新增代码：在控制台显示excelData的前两行的第1、2、3、5列
+        window.onload = function() {
+            var excelData = window.excelData;
+            if (excelData && excelData.length > 0) {
+                for (var i = 0; i < Math.min(2, excelData.length); i++) {
+                    var row = excelData[i];
+                    console.log("Row " + (i + 1) + ": ", row);
+                    var columns = [row[Object.keys(row)[0]], row[Object.keys(row)[1]], row[Object.keys(row)[2]], row[Object.keys(row)[4]]];
+                    console.log("Row " + (i + 1) + ": ", columns);
+                }
+            }
+        };
+
+        function navigate(direction) {
+            const excelData = window.excelData;
+            if (excelData && excelData.length > 0) {
+                if (direction === 'next' && current_index < excelData.length - 1) {
+                    current_index++;
+                } else if (direction === 'prev' && current_index > 0) {
+                    current_index--;
+                }
+                console.log("navigate " + direction + " " + current_index);
+                showColumn('');
+            }
         }
     </script>
 </head>
@@ -69,18 +93,13 @@
                 <h2>Directory: {{ directory_name }}</h2>
                 <p><a href="{% url 'index' %}">Back to Index</a></p>
                 <h3>Contents:</h3>
-                <ul id="column-content" style="display: none;">
+                <ul id="column-content" >
 
                 </ul>
 
-                <script>
-                    window.excelData = {{ excel_data|safe }};
-                    // 打印excel_data的行号和内容到控制台
-{#                    {% for row in excel_data %}#}
-{#                        console.log("Row {{ forloop.counter }}: {{ row }}");#}
-{#                    {% endfor %}#}
-                </script>
-
+                <!-- 新增的按钮 -->
+                <button onclick="navigate('prev')">上一个</button>
+                <button onclick="navigate('next')">下一个</button>
                 <!-- 新增的图片设计内容 -->
                 <div class="image-container">
                     <div style="display: inline-block; margin-right: 20px;">

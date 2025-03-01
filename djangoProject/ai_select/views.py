@@ -59,8 +59,12 @@ def directory_detail_view(request, directory_name):
     if os.path.exists(excel_file_path):
         df = pd.read_excel(excel_file_path)
         # 替换所有NaN值为空字符串
-        df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
+        # df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
+        df = df.fillna("-")
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
+        # 添加序列号
+        for i, item in enumerate(excel_data, start=1):
+            item['row_number'] = i
         if df.shape[1] >= 3:  # 确保Excel文件有至少三列
             third_column = df.iloc[:, 2].tolist()
         else:

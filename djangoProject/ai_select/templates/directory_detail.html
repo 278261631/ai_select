@@ -24,7 +24,7 @@
         function showColumn(columnValue) {
             const excelData = window.excelData;
             $('#column-content').empty();
-             console.log("showColumn "  + " " + current_index);
+            console.log("showColumn "  + " " + current_index);
             if (excelData && excelData.length > 0) {
                 const row = excelData[current_index];
                 // 判断columnValue 是否是空字符
@@ -32,12 +32,45 @@
                      console.log("navigate "  + " " + current_index);
                      $('#column-content').append('<li>' + row[Object.keys(row)[0]] + " " + row[Object.keys(row)[0]] + '</li>');
 
+                     // 新增代码：通过AJAX请求获取静态图路径
+                     $.ajax({
+                         url: '{% url "get_image_data" %}',
+                         type: 'POST',
+                         data: JSON.stringify({ a_img_value: row["A_Image_Path"] }),
+                         contentType: 'application/json',
+                         success: function(response) {
+                             $('#static-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                         },
+                         error: function(xhr, status, error) {
+                             console.error("Error fetching static image path:", error);
+                         }
+                     });
+                     $.ajax({
+                         url: '{% url "get_image_data" %}',
+                         type: 'POST',
+                         data: JSON.stringify({ a_img_value: row["B_Image_Path"] }),
+                         contentType: 'application/json',
+                         success: function(response) {
+                             $('#new-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                         },
+                         error: function(xhr, status, error) {
+                             console.error("Error fetching static image path:", error);
+                         }
+                     });
+                     $.ajax({
+                         url: '{% url "get_image_data" %}',
+                         type: 'POST',
+                         data: JSON.stringify({ a_img_value: row["C_Image_Path"] }),
+                         contentType: 'application/json',
+                         success: function(response) {
+                             $('#hist-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                         },
+                         error: function(xhr, status, error) {
+                             console.error("Error fetching static image path:", error);
+                        }
+                     });
                 }
-
             }
-
-
-
         }
 
         // 新增代码：在控制台显示excelData的前两行的第1、2、3、5列
@@ -104,12 +137,14 @@
                 <div class="image-container">
                     <div style="display: inline-block; margin-right: 20px;">
                         <h3>静态图</h3>
-                        <img src="https://placehold.co/300x200" alt="Static Image">
+                        <img id="static-image" src="https://placehold.co/300x200" alt="Static Image">
                         <p>调用路径见Excel文件A_Image_Path列，把X:\改成E:\HMT-backend就行了</p>
                     </div>
                     <div style="display: inline-block;">
                         <h3>新图、历史图（与psp网页类似,鼠标点击切换）</h3>
-                        <img src="https://placehold.co/300x200" alt="New Image">
+                        <img id="new-image" src="https://placehold.co/300x200" alt="New Image">
+                        <img id="hist-image" src="https://placehold.co/300x200" alt="New Image">
+
                         <p>调用路径分别是excel文件的B_Image_Path和C_Image_Path</p>
                     </div>
                 </div>

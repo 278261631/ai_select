@@ -1,9 +1,16 @@
+import json
+
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from datetime import datetime
 import pytz
 import os
 import pandas as pd  # 添加pandas库用于读取Excel文件
+from django.http import JsonResponse
+import base64
+
+from django.views.decorators.csrf import csrf_exempt
+
 
 def is_valid_date(date_string):
     try:
@@ -96,3 +103,32 @@ def directory_detail_view(request, directory_name):
         'excel_data': excel_data,  # 添加Excel数据到context
     }
     return render(request, 'directory_detail.html', context)
+
+
+@csrf_exempt  # 确保可以接收POST请求
+def get_image_data(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            a_img_value = data.get('a_img_value')
+            a_img_value = a_img_value.replace('\\\\', '/').replace('\\', '/')
+
+            # 查找a_img_value 中 字符"baseline"的位置并删除 之前的部分
+            a_img_value = a_img_value[a_img_value.find("baseline") + len("baseline") + 1:]
+            # 拼接新的路径
+            a_img_value = os.path.join(settings.BASELINE_ROOT, a_img_value)
+            print(a_img_value)
+
+            if not os.path.exists(a_img_value):
+                return JsonResponse({'error': 'Image not found'}, status=404)
+
+            with open(a_img_value, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+
+            return JsonResponse({'image_data': encoded_string})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+

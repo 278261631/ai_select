@@ -98,6 +98,37 @@
                 showColumn('');
             }
         }
+
+        // 新增代码：添加图片点击切换功能
+        $(document).ready(function() {
+            let newImageVisible = true;
+            $('#new-image').show();
+            $('#hist-image').hide();
+            $('#new-image').click(function() {
+                 $('#new-image').toggle();
+                 $('#hist-image').toggle();
+            });
+
+            $('#hist-image').click(function() {
+                 $('#new-image').toggle();
+                 $('#hist-image').toggle();
+            });
+
+            // 绑定键盘快捷键
+            $(document).keydown(function(event) {
+                switch (event.key) {
+                    case 'ArrowRight':
+                        navigate('next');
+                        break;
+                    case 'ArrowLeft':
+                        navigate('prev');
+                        break;
+                    case 'ArrowUp':
+                        $('#new-image').click();
+                        break;
+                }
+            });
+        });
     </script>
 </head>
 <body>

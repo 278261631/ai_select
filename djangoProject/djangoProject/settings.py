@@ -25,12 +25,12 @@ SECRET_KEY = 'django-insecure-@4gsb7jpg(2ba+(d#^6xhivymnj0kw95z5ix5p0&e(=%mn8f)&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ai_select.apps.AiSelectConfig',
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +50,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'  # 或 'same-origin-allow-popups'、'unsafe-none'
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ROOT_URLCONF = 'djangoProject.urls'
 
@@ -120,7 +123,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/ai_select/static/'
+STATIC_URL = '/ai_static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
@@ -136,9 +139,9 @@ DIRECTORY_ROOT = 'E:/HMT-backend/detect'
 BASELINE_ROOT = 'E:/HMT-backend/baseline'
 EXCEL_FILE_NAME = 'classification_results.xlsx'
 
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/ai_admin/login/'
 
-
+CSRF_COOKIE_SECURE = False
 CORS_ALLOWED_ORIGINS = [
 
     "http://127.0.0.1:18000",

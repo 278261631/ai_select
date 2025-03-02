@@ -7,8 +7,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/jquery.toast.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.toast.min.css' %}">
     <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.toast.min.js' %}"></script>
     <script src="{% static 'admin/js/jquery.init.js' %}"></script>
     <script src="{% static 'admin/js/core.js' %}"></script>
     <script src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
@@ -16,7 +17,6 @@
     <script src="{% static 'admin/js/urlify.js' %}"></script>
     <script src="{% static 'admin/js/prepopulate.js' %}"></script>
     <script src="{% static 'admin/js/vendor/xregexp/xregexp.min.js' %}"></script>
-    <script src="{% static 'admin/js/vendor/jquery/jquery.toast.min.js' %}"></script>
 
     <script>
         const $ = django.jQuery;
@@ -26,6 +26,7 @@
         const color_line = `rgba(200, 150, 0, 1)`;
         const color_review = `rgba(10, 150, 200, 1)`;
         const color_true = `rgba(0, 150, 0, 1)`;
+        const color_undetect = `rgb(191, 99, 241)`;
 
         function showColumn(columnValue) {
             const excelData = window.excelData;
@@ -57,6 +58,10 @@
                          categoryColor = color_true;
                          $('input[name="new_third_column"][value="' + row["Category"] + '"]').prop('checked', true);
                          break;
+                     case 'UNDETECT':
+                         categoryColor = color_undetect;
+                         $('input[name="new_third_column"][value="' + row["Category"] + '"]').prop('checked', true);
+                         break;
                      default:
                          categoryColor = 'white';
                  }
@@ -65,6 +70,7 @@
                 $('#new_LINE_label').css("color", color_line);
                 $('#new_REVIEW_label').css("color", color_review);
                 $('#new_TRUE_label').css("color", color_true);
+                $('#new_UNDETECT_label').css("color", color_undetect);
                 $('#column-content').css('color', categoryColor);
                 $('#column-content').append('<li> [ ' + row["row_number"] + " ] : " + row["Filename"] + '</li>');
                 $('#image-comment').val(row["comment"]);
@@ -214,26 +220,19 @@
                  contentType: 'application/json',
                  success: function(response) {
                      // 添加一个提示泡， 使用自动消失的提示框
-                     $.toast({
-                         heading: 'Success',
-                         text: 'Changes saved successfully!',
-                         position: 'top-right',
-                         loaderBg: '#ff6849',
-                         icon: 'success',
-                         hideAfter: 3000,
-                         stack: 6
+                     $.toast({heading: 'Success', loader: false,
+                         text: '已保存',
+                         position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000,stack: 6
                      });
                  },
                  error: function(xhr, status, error) {
                      console.error("Error fetching static image path:", error);
+                     console.error("Error fetching static image path:", xhr);
+                     console.error("Error fetching static image path:", status);
                      $.toast({
                          heading: 'Error',
-                         text: 'Failed to save changes.',
-                         position: 'top-right',
-                         loaderBg: '#ff6849',
-                         icon: 'error',
-                         hideAfter: 3000,
-                         stack: 6
+                         text: "保存失败 : " + xhr.responseText,
+                         position: 'top-right',loaderBg: '#ff6849',icon: 'error',hideAfter: 30000,stack: 6
                      });
                 }
             });
@@ -310,6 +309,12 @@
                 }
             });
             showColumn("");
+
+            $.toast({heading: 'Success', loader: false,
+             text: '已加载{{ directory_name }}',
+             position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000
+            });
+
         });
     </script>
 </head>
@@ -342,9 +347,9 @@
             <div id="content-main">
                 <!-- 新增的按钮 -->
                 <div style="display: flex;">
-                    <button onclick="navigate('prev')">上一个（键盘左）</button>
-                    <button onclick="navigate('next')">下一个（键盘右）</button>
-                    <ul id="column-content" ></ul>
+                    <button class="button" onclick="navigate('prev')" style="margin-right: 30px;">上一个（键盘左）</button>
+                    <button class="button" onclick="navigate('next')">下一个（键盘右）</button>
+                    <ul id="column-content"></ul>
                 </div>
                 <!-- 新增的图片设计内容 -->
                 <div class="image-container">
@@ -378,40 +383,39 @@
                         <p>判断的备注，比如确认这个是某个小行星或者某个变星编号</p>
                     </div>
 
-                    <div class="true-false-container" style="margin-left: 100px;">
-                        <h3>分类判断是否正确按钮</h3>
-
-                        <button onclick="alert('Correct')">正确</button>
-                        <button onclick="alert('Incorrect')">错误</button>
-                        <button onclick="save_change()">修改</button>
-                    </div>
                     <div style="display: flex; flex-direction: row;margin-left: 100px;">
 
-                        <div style="margin-right: 10px;">
-                            <input type="radio" id="new_REVIEW" name="new_third_column" value="REVIEW" onclick="new_type_click(this.value)">
+                        <div style="margin-right: 10px;margin-top: 40px;">
+                            <input type="radio" id="new_REVIEW" name="new_third_column" value="REVIEW" >
                             <label for="new_REVIEW" id="new_REVIEW_label">REVIEW</label>
                         </div>
 
-                        <div style="margin-right: 10px;">
-                            <input type="radio" id="new_FALSE" name="new_third_column" value="FALSE" onclick="new_type_click(this.value)">
+                        <div style="margin-right: 10px;margin-top: 40px;">
+                            <input type="radio" id="new_FALSE" name="new_third_column" value="FALSE" >
                             <label for="new_FALSE" id="new_FALSE_label">FALSE</label>
                         </div>
 
-                        <div style="margin-right: 10px;">
-                            <input type="radio" id="new_UNDETECT" name="new_third_column" value="UNDETECT" onclick="new_type_click(this.value)">
+                        <div style="margin-right: 10px;margin-top: 40px;">
+                            <input type="radio" id="new_UNDETECT" name="new_third_column" value="UNDETECT" >
                             <label for="new_UNDETECT" id="new_UNDETECT_label">UNDETECT</label>
                         </div>
 
-                        <div style="margin-right: 10px;">
-                            <input type="radio" id="new_TRUE" name="new_third_column" value="TRUE" onclick="new_type_click(this.value)">
+                        <div style="margin-right: 10px;margin-top: 40px;">
+                            <input type="radio" id="new_TRUE" name="new_third_column" value="TRUE" >
                             <label for="new_TRUE" id="new_TRUE_label">TRUE</label>
                         </div>
 
-                        <div style="margin-right: 10px;">
-                            <input type="radio" id="new_LINE" name="new_third_column" value="LINE" onclick="new_type_click(this.value)">
+                        <div style="margin-right: 10px;margin-top: 40px;">
+                            <input type="radio" id="new_LINE" name="new_third_column" value="LINE" >
                             <label for="new_LINE" id="new_LINE_label">LINE</label>
                         </div>
 
+                    </div>
+
+                    <div class="true-false-container" style="margin-left: 100px;">
+                        <h3>分类判断是否正确按钮</h3>
+                        <button class="button" onclick="alert('Correct')" style="margin-right: 30px;">正确</button>
+                        <button class="button" onclick="save_change()" style="margin-right: 30px;">修改</button>
                     </div>
                 </div>
 

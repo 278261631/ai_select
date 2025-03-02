@@ -1,4 +1,5 @@
 import json
+import shutil
 
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
@@ -153,16 +154,36 @@ def save_change(request):
             # 读取Excel文件并提取第三列内容
             if os.path.exists(excel_file_path):
                 df = pd.read_excel(excel_file_path)
-                df = df.fillna("-")
+                df = df.fillna("")
 
                 fn = df.at[row_index, 'Filename']
+                # 转为小写
+                old_type_value = df.at[row_index, 'Category']
+                old_type_value_path = old_type_value.lower()
+                type_value_path = type_value.lower()
                 if fn == filename:
                     df.at[row_index, 'Category'] = type_value
-                    # 如果没有Category列，则添加该列
+                    # 如果没有comment列，则添加该列
                     if 'comment' not in df.columns:
                         df['comment'] = ''
                     df.at[row_index, 'comment'] = comment_txt
+
+                    if 'username' not in df.columns:
+                        df['username'] = ''
+                    df.at[row_index, 'username'] = request.user.username
                     df.to_excel(excel_file_path, index=False)
+
+                    jpg_file_path = os.path.join(directory_path, old_type_value_path, fn)
+                    jpg_move_path = os.path.join(directory_path, type_value_path, fn)
+                    # 移动文件
+                    if os.path.exists(jpg_file_path):
+                        print(f'Move {jpg_file_path} to {jpg_move_path}')
+                        shutil.move(jpg_file_path, jpg_move_path)
+                    else:
+                        return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
+                    if not os.path.exists(jpg_file_path):
+                        return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
+
                 else:
                     return JsonResponse({'error': 'filename not match'}, status=400)
 

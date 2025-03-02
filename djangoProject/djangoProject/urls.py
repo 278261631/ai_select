@@ -1,10 +1,12 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include  # 修改：添加 include 函数
 from django.views.generic import RedirectView
+
 from ai_select import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('ai_select/admin/', admin.site.urls),  # 修改：将 admin/ 路径改为 ai_select/admin/
     path('', RedirectView.as_view(url='ai_select/', permanent=True)),
     path('ai_select/', views.index_view, name='index'),
     path('ai_select/directory/<str:directory_name>/', views.directory_detail_view, name='directory_detail'),

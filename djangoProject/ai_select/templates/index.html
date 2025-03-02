@@ -33,13 +33,13 @@
         <div id="content" class="flex">
             <div id="content-main">
                 <h2>Index Page</h2>
-                <p>Current Date: {{ current_date }}</p>
-                <p>Current Time: {{ current_time }}</p>
-                <p>Current Weekday: {{ current_weekday }}</p>
-                <p>Current Timezone: {{ current_timezone }}</p>
+                <span style="margin-right: 20px">日期: {{ current_date }}</span>
+                <span style="margin-right: 20px">时间: {{ current_time }}</span>
+                <span style="margin-right: 20px"> {{ current_weekday }}</span>
+                <span style="margin-right: 20px">时区: {{ current_timezone }}</span>
                 {% if user.is_authenticated %}
-                    <p>Welcome, {{ user.username }}! <a href="{% url 'admin:logout' %}">Logout</a></p>
-                    <h3>Directories:</h3>
+                    <p style="margin-right: 50px">[{{ user.username }}] <a href="{% url 'admin:logout' %}">Logout</a></p>
+                    <h3>目录: </h3>
                     <ul>
                         {% for directory, is_date, formatted_date in directories %}
                             <li><button onclick="window.location.href='{% url 'directory_detail' directory %}'">{{ directory }} : [{{ formatted_date }}]</button></li>

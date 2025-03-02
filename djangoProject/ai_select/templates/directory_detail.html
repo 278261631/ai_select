@@ -380,7 +380,7 @@
                     <div class="image-comment-container">
                         <h3>备注：</h3>
                         <textarea id="image-comment" rows="4" cols="50"></textarea>
-                        <p>判断的备注，比如确认这个是某个小行星或者某个变星编号</p>
+{#                        <p>判断的备注，比如确认这个是某个小行星或者某个变星编号</p>#}
                     </div>
 
                     <div style="display: flex; flex-direction: row;margin-left: 100px;">
@@ -414,14 +414,14 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
-                        <button class="button" onclick="alert('Correct')" style="margin-right: 30px;">正确</button>
+{#                        <button class="button" onclick="alert('Correct')" style="margin-right: 30px;">正确</button>#}
                         <button class="button" onclick="save_change()" style="margin-right: 30px;">修改</button>
                     </div>
                 </div>
 
                 <div class="image-container">
                     <h3>前往已判页面的链接</h3>
-{#                    <a href="{% url 'judged_pages' %}">前往已判页面</a>#}
+                    <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
                 </div>
             </div>
         </div>

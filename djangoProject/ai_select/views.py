@@ -1,6 +1,7 @@
 import json
 import shutil
 
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from datetime import datetime
@@ -20,13 +21,28 @@ def is_valid_date(date_string):
     except ValueError:
         return False
 
+@login_required
 def index_view(request):
     # 获取当前日期和时间
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
     current_date = now.strftime('%Y-%m-%d')
     current_time = now.strftime('%H:%M:%S')
-    current_weekday = now.strftime('%A')
-    current_timezone = now.tzinfo.tzname(now)
+
+    current_weekday = now.strftime('%A')  # 获取英文星期几
+    # 将英文星期几转换为中文
+    weekday_map = {
+        'Monday': '星期一',
+        'Tuesday': '星期二',
+        'Wednesday': '星期三',
+        'Thursday': '星期四',
+        'Friday': '星期五',
+        'Saturday': '星期六',
+        'Sunday': '星期日'
+    }
+    current_weekday = weekday_map.get(current_weekday, current_weekday)  # 转换为中文
+    # 修改时区显示为GMT+的形式
+    current_timezone = now.strftime('%z')  # 获取时区偏移量，例如 +0800
+    current_timezone = f"GMT{current_timezone[:3]}:{current_timezone[3:]}"  # 格式化为 GMT+08:00
 
     # 获取目录列表
     directory_root = settings.DIRECTORY_ROOT
@@ -52,6 +68,7 @@ def index_view(request):
     }
     return render(request, 'index.html', context)
 
+@login_required
 def directory_detail_view(request, directory_name):
     directory_root = settings.DIRECTORY_ROOT
     directory_path = os.path.join(directory_root, directory_name)
@@ -108,6 +125,7 @@ def directory_detail_view(request, directory_name):
 
 
 @csrf_exempt  # 确保可以接收POST请求
+@login_required
 def get_image_data(request):
     if request.method == 'POST':
         try:
@@ -135,6 +153,7 @@ def get_image_data(request):
 
 
 @csrf_exempt  # 确保可以接收POST请求
+@login_required
 def save_change(request):
     if request.method == 'POST':
         try:

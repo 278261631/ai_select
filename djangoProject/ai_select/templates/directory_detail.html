@@ -8,8 +8,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.toast.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/dark_mode.css' %}">
     <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'js/jquery.toast.min.js' %}"></script>
+    <script src="{% static 'admin/js/theme.js' %}"></script>
     <script src="{% static 'admin/js/jquery.init.js' %}"></script>
     <script src="{% static 'admin/js/core.js' %}"></script>
     <script src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
@@ -280,6 +282,19 @@
         }
 
         // 新增代码：添加图片点击切换功能
+        function cycleTheme() {
+            // 切换 html标签的 data-theme="dark" data-theme="light"属性
+            const html = document.querySelector('html');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+            //保存设置到 localStorage
+            localStorage.setItem('theme', html.getAttribute('data-theme'));
+
+        }
+
         $(document).ready(function() {
             let newImageVisible = true;
             $('#new-image').show();
@@ -315,6 +330,15 @@
              position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000
             });
 
+            // 新增代码：绑定主题切换按钮
+            $('#theme-toggle').click(function() {
+                cycleTheme();
+            });
+            // 从本地存储中读取主题设置，并应用到页面上
+            const theme = localStorage.getItem('theme');
+            if (theme) {
+                document.querySelector('html').setAttribute('data-theme', theme);
+            }
         });
     </script>
 </head>
@@ -330,6 +354,10 @@
                 {% else %}
                     <a href="{% url 'admin:login' %}">Log in</a>
                 {% endif %}
+                            <!-- 新增代码：主题切换按钮 -->
+                <a id="theme-toggle" style="background: none; border: none; cursor: pointer;">
+                    样式切换
+                </a>
             </div>
         </div>
         <div id="content" class="flex">

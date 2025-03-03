@@ -147,9 +147,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:18000",
 
 ]
+CSRF_TRUSTED_ORIGINS = [
+
+    "http://127.0.0.1:18000",
+
+]
 ALLOWED_HOSTS = [
 
     '127.0.0.1',       # 新增本地开发地址
     'localhost'         # 可选添加本地域名
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+

@@ -50,6 +50,8 @@ def index_view(request):
     if os.path.exists(directory_root) and os.path.isdir(directory_root):
         directories = [d for d in os.listdir(directory_root) if os.path.isdir(os.path.join(directory_root, d))]
 
+    # directories 倒序排列
+    directories.sort(reverse=True)
     # 标记每个目录是否为日期格式，并添加格式化后的日期字符串
     directories_with_date_flag = []
     for d in directories:
@@ -87,6 +89,19 @@ def directory_detail_view(request, directory_name):
         # df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
         # df = df.fillna("-")
         df = df.fillna("")
+        need_fix_bool = False
+        # 循环遍历DataFrame，将Category列的值替换为对应的字符串
+        for row_index, row in df.iterrows():
+            # 检查row['Category']的类型是不是布尔类型
+            if isinstance(row['Category'], bool):
+                if not row['Category']:
+                    df.at[row_index, 'Category'] = "FALSE"
+                    need_fix_bool = True
+
+        if need_fix_bool:
+            print(f"需要修复bool类型 {excel_file_path}")
+            df.to_excel(excel_file_path, index=False)
+
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
         # 添加序列号
         for i, item in enumerate(excel_data, start=1):

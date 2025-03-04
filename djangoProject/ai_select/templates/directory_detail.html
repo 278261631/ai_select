@@ -372,6 +372,10 @@
             if (theme) {
                 document.querySelector('html').setAttribute('data-theme', theme);
             }
+
+            const default_select_radio = $('input[name="third_column"][value="' + "TRUE" + '"]');
+            default_select_radio.prop('checked', true);
+            default_select_radio.click();
         });
     </script>
 </head>
@@ -382,6 +386,7 @@
                 <h1 id="site-name"><a href="{% url 'index' %}">HMT AI select</a></h1>
             </div>
             <div id="user-tools">
+                <strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面的链接</a></strong>
                 {% if user.is_authenticated %}
                     [<strong>{{ user.username }}</strong>] | <a href="{% url 'admin:logout' %}"> [退出]</a>
                 {% else %}
@@ -445,7 +450,7 @@
                 <div style="display: flex;">
                     <div class="image-comment-container">
                         <h3>备注：</h3>
-                        <textarea id="image-comment" rows="4" cols="50"></textarea>
+                        <textarea id="image-comment" rows="2" cols="50"></textarea>
 {#                        <p>判断的备注，比如确认这个是某个小行星或者某个变星编号</p>#}
                     </div>
 
@@ -480,8 +485,8 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
-                        <button id="correct_button" class="button" onclick="save_change()" style="margin-right: 30px;">正确</button>
-                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change()" style="margin-right: 30px;">修改</button>
+                        <button id="correct_button" class="button" onclick="save_change()" style="margin-right: 30px;">确认正确</button>
+                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change()" style="margin-right: 30px;">修改判断</button>
                     </div>
                 </div>
 

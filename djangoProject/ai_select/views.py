@@ -210,14 +210,16 @@ def save_change(request):
                     jpg_file_path = os.path.join(directory_path, old_type_value_path, fn)
                     jpg_move_path = os.path.join(directory_path, type_value_path, fn)
                     # 移动文件
-                    if os.path.exists(jpg_file_path):
-                        print(f'Move {jpg_file_path} to {jpg_move_path}')
-                        shutil.move(jpg_file_path, jpg_move_path)
+                    if  df.at[row_index, 'Category'] != "UNDETECT":
+                        if os.path.exists(jpg_file_path):
+                            print(f'Move {jpg_file_path} to {jpg_move_path}')
+                            shutil.move(jpg_file_path, jpg_move_path)
+                        else:
+                            return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
+                        if not os.path.exists(jpg_file_path): # todo ???
+                            return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
                     else:
-                        return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
-                    if not os.path.exists(jpg_file_path):
-                        return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
-
+                        print(f'skip Move undetected {jpg_file_path} to {jpg_move_path}')
                 else:
                     return JsonResponse({'error': 'filename not match'}, status=400)
 

@@ -200,11 +200,9 @@
                 for (let i = 0; i < excelData.length; i++) {
                     const row = excelData[i];
                     console.log("Row " + (i + 1) + ": ", row);
-                    {#var columns = [row[Object.keys(row)[0]], row[Object.keys(row)[1]], row[Object.keys(row)[2]], row[Object.keys(row)[4]]];#}
-                    {#console.log("Row " + (i + 1) + ": ", columns);#}
-                    //✨
-                    {#$('#row_status-content').append('<span>*' + '</span>');#}
-                    $('#row_status-content').append('<span style="display: inline-block; width: 1em;">*</span>');
+                    // 判断 row["username"] 是否存在且长度大于0
+                    const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
+                    $('#row_status-content').append('<span id="row_status_id_' + i + '" style="display: inline-block; width: 1em;">' + displayChar + '</span>');
                     if((i+1)%5 == 0) {
                         $('#row_status-content').append('<span style="display: inline-block; width: 1em;"> ' + '</span>');
                     }
@@ -456,7 +454,7 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
-{#                        <button class="button" onclick="alert('Correct')" style="margin-right: 30px;">正确</button>#}
+                        <button class="button" onclick="save_change()" style="margin-right: 30px;">正确</button>
                         <button class="button" onclick="save_change()" style="margin-right: 30px;">修改</button>
                     </div>
                 </div>

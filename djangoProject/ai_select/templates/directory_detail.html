@@ -30,7 +30,20 @@
         const color_true = `rgba(0, 150, 0, 1)`;
         const color_undetect = `rgb(191, 99, 241)`;
 
+
+        // 创建一个随机位置的 <span> x </span>
+        function createRandomSpan(left_pix, top_pix) {
+            const span = $('<span>✨</span>');
+            span.css({position: 'absolute',left: left_pix,top: top_pix});
+            $('body').append(span);
+            return span;
+        }
+        function animateSpan(span, target_left_pix, target_top_pix) {
+            span.animate({left: target_left_pix, top: target_top_pix}, 600, 'swing', function() {span.remove();});
+        }
+
         function showColumn(columnValue) {
+            {#console.log("22222: showColumn");#}
             const excelData = window.excelData;
             $('#column-content').empty();
             console.log("showColumn "  + " " + current_index);
@@ -189,29 +202,11 @@
                          console.error("Error fetching static image path:", error);
                     }
                  });
-
+                 // 获取编辑图标
+                 $('#saved_mark').text($('#row_status_id_'+(current_index+1)).text());
             }
         }
 
-        // 新增代码：在控制台显示excelData的前两行的第1、2、3、5列
-        window.onload = function() {
-            var excelData = window.excelData;
-            if (excelData && excelData.length > 0) {
-                for (let i = 0; i < excelData.length; i++) {
-                    const row = excelData[i];
-                    console.log("Row " + (i + 1) + ": ", row);
-                    // 判断 row["username"] 是否存在且长度大于0
-                    const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
-                    $('#row_status-content').append('<span id="row_status_id_' + i + '" style="display: inline-block; width: 1em;">' + displayChar + '</span>');
-                    if((i+1)%5 == 0) {
-                        $('#row_status-content').append('<span style="display: inline-block; width: 1em;"> ' + '</span>');
-                    }
-                    if((i+1)%50 == 0) {
-                        $('#row_status-content').append('<br/>');
-                    }
-                }
-            }
-        };
 
         function radio_click_init() {
             current_index = 0;
@@ -228,11 +223,25 @@
                      type_value: new_radioValue, comment_txt: new_comment, directory_name: "{{ directory_name }}" }),
                  contentType: 'application/json',
                  success: function(response) {
+                     $('#row_status_id_'+(current_index+1)).text('✅');
                      // 添加一个提示泡， 使用自动消失的提示框
                      $.toast({heading: 'Success', loader: false,
                          text: '已保存',
                          position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000,stack: 6
                      });
+
+                     const $editButton = $('#modify_button');
+                     const $target = $('#row_status_id_' + (current_index + 1));
+                     const initialSpan = createRandomSpan( $editButton.offset().left,  $editButton.offset().top);
+
+                     console.log($editButton.offset().left);
+                     console.log($editButton.offset().top);
+                     console.log($target.offset().left);
+                     console.log($target.offset().top);
+                     animateSpan(initialSpan, $target.offset().left, $target.offset().top);
+
+
+
                  },
                  error: function(xhr, status, error) {
                      console.error("Error fetching static image path:", error);
@@ -303,6 +312,23 @@
         }
 
         $(document).ready(function() {
+            {#console.log("1111: onload");#}
+            var excelData = window.excelData;
+            if (excelData && excelData.length > 0) {
+                for (let i = 0; i < excelData.length; i++) {
+                    const row = excelData[i];
+                    {#console.log("Row " + (i + 1) + ": ", row);#}
+                    // 判断 row["username"] 是否存在且长度大于0
+                    const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
+                    $('#row_status-content').append('<span id="row_status_id_' + row["row_number"] + '" style="display: inline-block; width: 1em;">' + displayChar + '</span>');
+                    if((i+1)%5 == 0) {
+                        $('#row_status-content').append('<span style="display: inline-block; width: 1em;"> ' + '</span>');
+                    }
+                    if((i+1)%50 == 0) {
+                        $('#row_status-content').append('<br/>');
+                    }
+                }
+            }
             let newImageVisible = true;
             $('#new-image').show();
             $('#hist-image').hide();
@@ -454,8 +480,8 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
-                        <button class="button" onclick="save_change()" style="margin-right: 30px;">正确</button>
-                        <button class="button" onclick="save_change()" style="margin-right: 30px;">修改</button>
+                        <button id="correct_button" class="button" onclick="save_change()" style="margin-right: 30px;">正确</button>
+                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change()" style="margin-right: 30px;">修改</button>
                     </div>
                 </div>
 

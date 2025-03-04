@@ -43,7 +43,7 @@
                     <h3>目录: </h3>
                     <ul>
                         {% for directory, is_date, formatted_date in directories %}
-                            <li><button onclick="window.location.href='{% url 'directory_detail' directory %}'">{{ directory }} : [{{ formatted_date }}]</button></li>
+                            <li><button onclick="window.location.href='{% url 'directory_detail' directory 'false' %}'">{{ directory }} : [{{ formatted_date }}]</button></li>
                         {% endfor %}
                     </ul>
                 {% else %}

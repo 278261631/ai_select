@@ -71,7 +71,8 @@ def index_view(request):
     return render(request, 'index.html', context)
 
 @login_required
-def directory_detail_view(request, directory_name):
+def directory_detail_view(request, directory_name, save_list):
+    save_list_bool = (save_list.lower() == 'true')
     directory_root = settings.DIRECTORY_ROOT
     directory_path = os.path.join(directory_root, directory_name)
     # 拼接excel文件路径
@@ -136,6 +137,8 @@ def directory_detail_view(request, directory_name):
         'third_column': grouped_third_column,  # 添加第三列内容到context
         'excel_data': excel_data,  # 添加Excel数据到context
     }
+    if save_list_bool:
+        return render(request, 'directory_detail_saved.html', context)
     return render(request, 'directory_detail.html', context)
 
 

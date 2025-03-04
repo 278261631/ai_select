@@ -433,7 +433,7 @@
                 <div style="display: flex;">
                     <div class="Probabilities-container" style="display: flex; flex-direction: row;">
                         <h3>各概率值，四个值</h3>
-                        <p>直接调用excel文件的Probabilities值</p>
+
                     </div>
 
                     <div class="download-container" style="margin-left: 20px;">
@@ -486,7 +486,7 @@
                 </div>
 
                 <div class="image-container">
-                    <h3>前往已判页面的链接</h3>
+                    <h3><a href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面的链接</a></h3>
                     <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
                 </div>
             </div>

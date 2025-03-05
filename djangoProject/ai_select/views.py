@@ -76,15 +76,29 @@ def directory_detail_view(request, directory_name, save_list):
     directory_root = settings.DIRECTORY_ROOT
     directory_path = os.path.join(directory_root, directory_name)
     # 拼接excel文件路径
-    excel_file_path = os.path.join(directory_path, settings.EXCEL_FILE_NAME)
+    excel_file_path = os.path.join(directory_path, f'saved_{settings.EXCEL_FILE_NAME}')
 
     if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
         return render(request, '404.html')  # 或者自定义错误页面
-    
+    src_excel_file_path = os.path.join(directory_path, f'{settings.EXCEL_FILE_NAME}')
     items = os.listdir(directory_path)
 
     # 读取Excel文件并提取第三列内容
-    if os.path.exists(excel_file_path):
+    if os.path.exists(src_excel_file_path):
+        if not os.path.exists(excel_file_path):
+            print(f"备份文件 {excel_file_path} <- {src_excel_file_path}")
+            shutil.copy(src_excel_file_path, excel_file_path)
+
+        df_src = pd.read_excel(src_excel_file_path)
+        df_src = df_src.fillna("")
+        for row_index, row in df_src.iterrows():
+            # 检查row['Category']的类型是不是布尔类型
+            if isinstance(row['Category'], bool):
+                if not row['Category']:
+                    df_src.at[row_index, 'Category'] = "FALSE"
+        src_excel_data = df_src.to_dict(orient='records')  # 将DataFrame转换为字典列表
+
+
         df = pd.read_excel(excel_file_path)
         # 替换所有NaN值为空字符串
         # df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
@@ -104,6 +118,23 @@ def directory_detail_view(request, directory_name, save_list):
             df.to_excel(excel_file_path, index=False)
 
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
+
+        #  对比excel_data和src_excel_data, 如果src_excel_data 有 excel_data中没有的项，则添加到excel_data中
+        need_update = False
+        for item in src_excel_data:
+            i_exists = False
+            for j_item in excel_data:
+                if j_item['Filename'] == item['Filename']:
+                    i_exists = True
+                    break
+            if i_exists:
+                continue
+            need_update = True
+            excel_data.append(item)
+        if need_update:
+            print(f"更新 {excel_file_path}")
+            df.to_excel(excel_file_path)
+
         # 添加序列号
         for i, item in enumerate(excel_data, start=1):
             item['row_number'] = i
@@ -184,7 +215,7 @@ def save_change(request):
 
             directory_root = settings.DIRECTORY_ROOT
             directory_path = os.path.join(directory_root, directory_name)
-            excel_file_path = os.path.join(directory_path, settings.EXCEL_FILE_NAME)
+            excel_file_path = os.path.join(directory_path, f'saved_{settings.EXCEL_FILE_NAME}')
             if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
                 return render(request, '404.html')  # 或者自定义错误页面
 

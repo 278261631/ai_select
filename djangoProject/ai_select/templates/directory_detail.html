@@ -212,7 +212,7 @@
             current_index = 0;
             navigate("next");
         }
-        function save_change() {
+        function save_change(auto_next) {
             const new_radioValue = $('input[name="new_third_column"]:checked').val();
             const new_comment = $('#image-comment').val();
             const row = excelData[current_index];
@@ -239,7 +239,9 @@
                      console.log($target.offset().left);
                      console.log($target.offset().top);
                      animateSpan(initialSpan, $target.offset().left, $target.offset().top);
-
+                     if (auto_next){
+                         navigate("next");
+                     }
 
 
                  },
@@ -485,8 +487,8 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
-                        <button id="correct_button" class="button" onclick="save_change()" style="margin-right: 30px;">确认正确</button>
                         <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change()" style="margin-right: 30px;">修改判断</button>
+                        <button id="correct_button" class="button" onclick="save_change(true)" style="margin-right: 30px;">确认正确</button>
                     </div>
                 </div>
 

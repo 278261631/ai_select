@@ -95,6 +95,10 @@
                 {#$('#column-content').append('<li> 行号:[ ' + row["row_number"] + " ]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 文件名: {" + row["Filename"] + '}</li>');#}
                 {#$('#image-comment').val(row["comment"]);#}
                 const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
+                if (!row["username"] || row["username"].length === 0){
+                    $('#image_items_'+current_index).hide();
+                    return;
+                }
                 $('#filename_'+current_index).text('行号:[ ' + row["row_number"] + " ]   文件名: {" + row["Filename"] + '}  '+displayChar+ '  类别：[' + row["Category"]+']');
                 $('#filename_'+current_index).css('color', categoryColor);
                  // 获取概率值

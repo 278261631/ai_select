@@ -135,8 +135,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 添加目录根路径配置
-DIRECTORY_ROOT = 'E:/HMT-backend/detect'
-BASELINE_ROOT = 'E:/HMT-backend/baseline'
+DIRECTORY_ROOT = 'E:/HMT-backend_debug/detect'
+BASELINE_ROOT = 'E:/HMT-backend_debug/baseline'
 EXCEL_FILE_NAME = 'classification_results.xlsx'
 
 LOGIN_URL = '/ai_admin/login/'

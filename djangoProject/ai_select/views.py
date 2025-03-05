@@ -250,8 +250,7 @@ def save_change(request):
                             shutil.move(jpg_file_path, jpg_move_path)
                         else:
                             return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
-                        if not os.path.exists(jpg_file_path): # todo ???
-                            return JsonResponse({'error': f'Image not found {jpg_file_path}'}, status=404)
+
                     else:
                         print(f'skip Move undetected {jpg_file_path} to {jpg_move_path}')
                 else:

@@ -107,11 +107,7 @@
                     return;
                 }
                 console.log("hide 1 "  + " " + current_index + " " + radioValue + row["Category"]);
-                if ((!radioValue) || radioValue !== row["Category"]) {
-                    $('#image_items_'+current_index).hide();
-                    console.log("hide "  + " " + current_index + " " + radioValue + row["Category"]);
-                    return;
-                }
+
                 if (radioValue) {
                     if (radioValue !== row["Category"]) {
                         $('#image_items_'+current_index).hide();

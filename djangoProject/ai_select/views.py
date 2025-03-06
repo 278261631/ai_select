@@ -157,7 +157,6 @@ def directory_detail_view(request, directory_name, save_list):
     }
     for item in third_column:
         if item in grouped_third_column:
-            #
             grouped_third_column[item] += 1
         else:
             grouped_third_column[item] = 1

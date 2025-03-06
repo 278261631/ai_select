@@ -185,6 +185,7 @@
                      contentType: 'application/json',
                      success: function(response) {
                          $('#new-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                         console.log("hist-image: new-image");
                      },
                      error: function(xhr, status, error) {
                          console.error("Error fetching static image path:", error);
@@ -197,6 +198,7 @@
                      contentType: 'application/json',
                      success: function(response) {
                          $('#hist-image').attr('src', 'data:image/png;base64,'+response.image_data);
+                         console.log("hist-image: hist-image");
                      },
                      error: function(xhr, status, error) {
                          console.error("Error fetching static image path:", error);
@@ -205,6 +207,23 @@
                  // 获取编辑图标
                  $('#saved_mark').text($('#row_status_id_'+(current_index+1)).text());
             }
+        }
+        function update_category_count() {
+
+            // 更新third_column 迭代third_column, 重新计数
+            const category_column_values = excelData.map(row => row['Category']);
+            let grouped_third_column = {'REVIEW': 0,'FALSE': 0,'UNDETECT': 0,'TRUE': 0,'LINE': 0,}
+            for (let i = 0; i < category_column_values.length; i++) {
+             if (category_column_values[i] in grouped_third_column) {
+                 grouped_third_column[category_column_values[i]] += 1;
+             } else {
+                 grouped_third_column[category_column_values[i]] = 1;
+             }
+            }
+            for (const key in grouped_third_column) {
+             $('#label_'+key).text(key + " [ " + grouped_third_column[key]+ " ]");
+            }
+            console.log(grouped_third_column);
         }
 
 
@@ -223,6 +242,9 @@
                      type_value: new_radioValue, comment_txt: new_comment, directory_name: "{{ directory_name }}" }),
                  contentType: 'application/json',
                  success: function(response) {
+                    excelData[current_index]['Category']= new_radioValue;
+                    update_category_count();
+
                      $('#row_status_id_'+(current_index+1)).text('✅');
                      // 添加一个提示泡， 使用自动消失的提示框
                      $.toast({heading: 'Success', loader: false,
@@ -274,12 +296,17 @@
                     showColumn('');
                 }
             }else {
+                let found_next = false;
                 if (direction === 'next') {
                     for (let i = current_index+1; i < excelData.length; i++) {
                         let row = excelData[i];
                         console.log(radioValue +  " + " + row["Category"])
+                        if (row["username"] && row["username"].length>0){
+                            continue;
+                        }
                         if (radioValue === row["Category"]) {
                             current_index = i;
+                            found_next = true;
                             break;
                         }
                     }
@@ -287,15 +314,30 @@
                     for (let i = current_index-1; i >0; i--) {
                         let row = excelData[i];
                         console.log(radioValue +  " - " + row["Category"])
+                        if (row["username"] && row["username"].length>0){
+                            continue;
+                        }
                         if (radioValue === row["Category"]) {
                             current_index = i;
+                            found_next = true;
                             break;
                         }
                     }
                 }
+                if (!found_next) {
+                    console.log("没有找到下一个未编辑行 ["+radioValue+"]")
+                    // 修改图像src 属性为300x200.svg
+                    $('#static-image').attr('src', '{% static "img/300x200.svg" %}');
+                    $('#new-image').attr('src', '{% static "img/300x200.svg" %}');
+                    $('#hist-image').attr('src', '{% static "img/300x200.svg" %}');
+                    $.toast({heading: '',text: "没有找到下一个 ["+radioValue+"]",loader: false,
+                        position: 'top-right',icon: 'warning',hideAfter: 3000
+                    });
+                }else {
+                    console.log("current_index 2: " + current_index)
+                    showColumn(radioValue);
+                }
 
-                console.log("current_index 2: " + current_index)
-                showColumn(radioValue);
             }
         }
 
@@ -358,7 +400,7 @@
                         break;
                 }
             });
-            showColumn("");
+            //showColumn("");
 
             $.toast({heading: 'Success', loader: false,
              text: '已加载{{ directory_name }}',
@@ -411,7 +453,7 @@
                 {% for item, count in third_column.items %}
                     <div style="margin-right: 10px;">
                         <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="radio_click_init()">
-                        <label for="{{ item }}">{{ item }} [{{ count }}]</label>
+                        <label id="label_{{ item }}" for="{{ item }}">{{ item }} [{{ count }}]</label>
                     </div>
                 {% endfor %}
             </form>
@@ -428,12 +470,12 @@
                 <div class="image-container">
                     <div style="display: inline-block; margin-right: 20px;">
                         <h3>静态图</h3>
-                        <img id="static-image" src="https://placehold.co/300x200" alt="Static Image">
+                        <img id="static-image" src="{% static 'img/300x200.svg' %}" alt="Static Image">
                     </div>
                     <div style="display: inline-block;">
                         <h3>新图、历史图（鼠标点击、键盘上 切换）</h3>
-                        <img id="new-image" src="https://placehold.co/300x200" alt="New Image">
-                        <img id="hist-image" src="https://placehold.co/300x200" alt="New Image">
+                        <img id="new-image" src="{% static 'img/300x200.svg' %}" alt="New Image">
+                        <img id="hist-image" src="{% static 'img/300x200.svg' %}" alt="New Image">
                     </div>
                 </div>
 
@@ -487,7 +529,7 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3>分类判断是否正确按钮</h3>
-                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change()" style="margin-right: 30px;">修改判断</button>
+                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 30px;">修改判断</button>
                         <button id="correct_button" class="button" onclick="save_change(true)" style="margin-right: 30px;">确认正确</button>
                     </div>
                 </div>

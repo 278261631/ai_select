@@ -29,7 +29,10 @@
         const color_true = `rgba(0, 150, 0, 1)`;
         const color_undetect = `rgb(191, 99, 241)`;
 
-
+        function clear_all() {
+            // 删除所有id前缀是 image_items_ 开头的 div
+            $('[id^="image_items_"]').remove();
+        }
 
         function showColumn(current_index) {
             // 新增代码：在 image_items 下方增加一个新的 div，并赋予新的 id，id 中包含 index
@@ -53,11 +56,14 @@
                             <a href="" download>Download Original Image</a>
                         </div>
                     </div>
+                    <div id="divider_${current_index}" style=" border-top:2px solid #999;border-bottom:1px dashed #999; margin:15px 0;"></div>
                 </div>
             `);
 
             const excelData = window.excelData;
             console.log("showColumn "  + " " + current_index);
+            const radioValue = $('input[name="third_column"]:checked').val();
+            console.log("radio: " + radioValue);
             if (excelData && excelData.length > 0) {
                 const row = excelData[current_index];
                 console.log("row:", row)
@@ -97,9 +103,26 @@
                 const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
                 if (!row["username"] || row["username"].length === 0){
                     $('#image_items_'+current_index).hide();
+                    console.log("hide 0 "  + " " + current_index + " " + radioValue + row["Category"]);
                     return;
                 }
-                $('#filename_'+current_index).text('行号:[ ' + row["row_number"] + " ]   文件名: {" + row["Filename"] + '}  '+displayChar+ '  类别：[' + row["Category"]+']');
+                console.log("hide 1 "  + " " + current_index + " " + radioValue + row["Category"]);
+                if ((!radioValue) || radioValue !== row["Category"]) {
+                    $('#image_items_'+current_index).hide();
+                    console.log("hide "  + " " + current_index + " " + radioValue + row["Category"]);
+                    return;
+                }
+                if (radioValue) {
+                    if (radioValue !== row["Category"]) {
+                        $('#image_items_'+current_index).hide();
+                        console.log("hide "  + " " + current_index + " " + radioValue + row["Category"]);
+                        return;
+                    }
+                }else{}
+
+                console.log("hide 3 "  + " " + current_index + " " + radioValue + row["Category"]);
+                $('#filename_'+current_index).text('行号:[ ' + row["row_number"] + " ]   文件名: {" + row["Filename"] + '}  '
+                    +displayChar+ '  类别：[' + row["Category"]+']' + '  用户：[' + row["username"]+']' + '  备注：[' + row["comment"]+']');
                 $('#filename_'+current_index).css('color', categoryColor);
                  // 获取概率值
                  let probabilities = row["Probabilities"];
@@ -234,6 +257,12 @@
             localStorage.setItem('theme', html.getAttribute('data-theme'));
 
         }
+        function radio_click_init() {
+            clear_all();
+            for (let i = 0; i < window.excelData.length; i++){
+                showColumn(i);
+            }
+        }
 
         $(document).ready(function() {
             var excelData = window.excelData;
@@ -280,6 +309,7 @@
             if (theme) {
                 document.querySelector('html').setAttribute('data-theme', theme);
             }
+            clear_all();
             for (let i = 0; i < window.excelData.length; i++){
                 showColumn(i);
             }

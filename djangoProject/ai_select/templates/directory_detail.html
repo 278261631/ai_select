@@ -23,7 +23,7 @@
     <script>
         const $ = django.jQuery;
         window.excelData = {{ excel_data|safe }};
-        let current_index = 0;
+        let current_index = -1;
         const color_false = `rgba(155, 10, 10, 1)`;
         const color_line = `rgba(200, 150, 0, 1)`;
         const color_review = `rgba(10, 150, 200, 1)`;
@@ -205,7 +205,7 @@
                     }
                  });
                  // 获取编辑图标
-                 $('#saved_mark').text($('#row_status_id_'+(current_index+1)).text());
+                 $('#saved_mark').text($('#row_status_id_'+(current_index)).text());
             }
         }
         function update_category_count() {
@@ -228,7 +228,7 @@
 
 
         function radio_click_init() {
-            current_index = 0;
+            current_index = -1;
             navigate("next");
         }
         function save_change(auto_next) {
@@ -245,7 +245,7 @@
                     excelData[current_index]['Category']= new_radioValue;
                     update_category_count();
 
-                     $('#row_status_id_'+(current_index+1)).text('✅');
+                     $('#row_status_id_'+current_index).text('✅');
                      // 添加一个提示泡， 使用自动消失的提示框
                      $.toast({heading: 'Success', loader: false,
                          text: '已保存',
@@ -253,7 +253,7 @@
                      });
 
                      const $editButton = $('#modify_button');
-                     const $target = $('#row_status_id_' + (current_index + 1));
+                     const $target = $('#row_status_id_' + current_index);
                      const initialSpan = createRandomSpan( $editButton.offset().left,  $editButton.offset().top);
 
                      console.log($editButton.offset().left);
@@ -293,7 +293,7 @@
                     }
                     console.log("navigate " + direction + " " + current_index);
                     console.log("current_index 1: " + current_index);
-                    showColumn('');
+                    {#showColumn('');#}
                 }
             }else {
                 let found_next = false;
@@ -310,8 +310,9 @@
                             break;
                         }
                     }
-                }else if (direction === 'prev' && current_index > 0) {
-                    for (let i = current_index-1; i >0; i--) {
+                }else if (direction === 'prev' && current_index >= -1) {
+                    if(current_index <0){current_index = excelData.length;}
+                    for (let i = current_index-1; i >=0; i--) {
                         let row = excelData[i];
                         console.log(radioValue +  " - " + row["Category"])
                         if (row["username"] && row["username"].length>0){
@@ -325,11 +326,14 @@
                     }
                 }
                 if (!found_next) {
+                    current_index = -1;
                     console.log("没有找到下一个未编辑行 ["+radioValue+"]")
                     // 修改图像src 属性为300x200.svg
                     $('#static-image').attr('src', '{% static "img/300x200.svg" %}');
                     $('#new-image').attr('src', '{% static "img/300x200.svg" %}');
                     $('#hist-image').attr('src', '{% static "img/300x200.svg" %}');
+                    $('.download-container').empty();
+                    $('.download-container').append(`<button class="btn btn-primary">下载 [-]</button>`);
                     $.toast({heading: '',text: "没有找到下一个 ["+radioValue+"]",loader: false,
                         position: 'top-right',icon: 'warning',hideAfter: 3000
                     });
@@ -481,7 +485,7 @@
 
                 <div style="display: flex;">
                     <div class="Probabilities-container" style="display: flex; flex-direction: row;">
-                        <h3>各概率值，四个值</h3>
+
 
                     </div>
 

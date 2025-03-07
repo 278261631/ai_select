@@ -44,7 +44,7 @@
                             <img id="static-image_${current_index}" src="https://placehold.co/300x200" alt="Static Image">
                         </div>
                         <div style="display: inline-block;">
-                            <h3>新图、历史图（鼠标点击、键盘上 切换）</h3>
+                            <h3><span id="new-hist-header-text_${current_index}"></span>（鼠标点击、键盘"上" 切换）</h3>
                             <img id="new-image_${current_index}" src="https://placehold.co/300x200" alt="New Image">
                             <img id="hist-image_${current_index}" src="https://placehold.co/300x200" alt="New Image">
                         </div>
@@ -229,14 +229,19 @@
 
                 $('#new-image_'+current_index).show();
                 $('#hist-image_'+current_index).hide();
+                toggle_new_hist_header(current_index);
                 $('#new-image_'+current_index).click(function() {
                      $('#new-image_'+current_index).toggle();
                      $('#hist-image_'+current_index).toggle();
+                     toggle_new_hist_header(current_index);
+                     {#console.log("new-image_"+current_index+" clicked")#}
                 });
 
                 $('#hist-image_'+current_index).click(function() {
                      $('#new-image_'+current_index).toggle();
                      $('#hist-image_'+current_index).toggle();
+                     toggle_new_hist_header(current_index);
+                     {#console.log("hist-image_"+current_index+" clicked")#}
                 });
             }
         }
@@ -259,7 +264,14 @@
                 showColumn(i);
             }
         }
-
+        function toggle_new_hist_header(c_index) {
+            if ($('#hist-image_'+c_index).is(':visible')) {
+             $('#new-hist-header-text_'+c_index).text('历史 📜 ');
+            }
+            if ($('#new-image_'+c_index).is(':visible')) {
+             $('#new-hist-header-text_'+c_index).text('新图 🌟 ');
+            }
+        }
         $(document).ready(function() {
             var excelData = window.excelData;
             if (excelData && excelData.length > 0) {
@@ -277,19 +289,6 @@
                     }
                 }
             }
-
-            {#$('#new-image').show();#}
-            {#$('#hist-image').hide();#}
-            {#$('#new-image').click(function() {#}
-            {#     $('#new-image').toggle();#}
-            {#     $('#hist-image').toggle();#}
-            {# });#}
-            {##}
-            {#$('#hist-image').click(function() {#}
-            {#     $('#new-image').toggle();#}
-            {#     $('#hist-image').toggle();#}
-            {# });#}
-
 
             $.toast({heading: 'Success', loader: false,
              text: '已加载{{ directory_name }} [' + window.excelData.length + '] 条数据',
@@ -309,6 +308,10 @@
             for (let i = 0; i < window.excelData.length; i++){
                 showColumn(i);
             }
+
+            const default_select_radio = $('input[name="third_column"][value="' + "TRUE" + '"]');
+            default_select_radio.prop('checked', true);
+            default_select_radio.click();
         });
     </script>
 </head>
@@ -343,6 +346,7 @@
                         <label for="{{ item }}">{{ item }} [{{ count }}]</label>
                     </div>
                 {% endfor %}
+            <span id="to_saved_link" style="margin-left: 30%;"><strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail' directory_name 'false' %}">前往未判页面</a></strong></span>
             </form>
 
             <div id="content-main">

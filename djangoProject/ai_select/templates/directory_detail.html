@@ -358,6 +358,14 @@
             localStorage.setItem('theme', html.getAttribute('data-theme'));
 
         }
+        function toggle_new_hist_header() {
+            if ($('#hist-image').is(':visible')) {
+             $('#new-hist-header-text').text('历史 📜 ');
+            }
+            if ($('#new-image').is(':visible')) {
+             $('#new-hist-header-text').text('新图 🌟 ');
+            }
+        }
 
         $(document).ready(function() {
             {#console.log("1111: onload");#}
@@ -380,14 +388,17 @@
             let newImageVisible = true;
             $('#new-image').show();
             $('#hist-image').hide();
+            toggle_new_hist_header();
             $('#new-image').click(function() {
                  $('#new-image').toggle();
                  $('#hist-image').toggle();
+                toggle_new_hist_header();
             });
 
             $('#hist-image').click(function() {
                  $('#new-image').toggle();
                  $('#hist-image').toggle();
+                 toggle_new_hist_header();
             });
 
             // 绑定键盘快捷键
@@ -434,7 +445,7 @@
                 <h1 id="site-name"><a href="{% url 'index' %}">HMT AI select</a></h1>
             </div>
             <div id="user-tools">
-                <strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面的链接</a></strong>
+{#                <strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面</a></strong>#}
                 {% if user.is_authenticated %}
                     [<strong>{{ user.username }}</strong>] | <a href="{% url 'admin:logout' %}"> [退出]</a>
                 {% else %}
@@ -458,8 +469,10 @@
                     <div style="margin-right: 10px;">
                         <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="radio_click_init()">
                         <label id="label_{{ item }}" for="{{ item }}">{{ item }} [{{ count }}]</label>
+
                     </div>
                 {% endfor %}
+            <span id="to_saved_link" style="margin-left: 30%;"><strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面</a></strong></span>
             </form>
 
             <div id="content-main">
@@ -477,7 +490,7 @@
                         <img id="static-image" src="{% static 'img/300x200.svg' %}" alt="Static Image">
                     </div>
                     <div style="display: inline-block;">
-                        <h3>新图、历史图（鼠标点击、键盘上 切换）</h3>
+                        <h3><span id="new-hist-header-text"></span>（鼠标点击、键盘"上" 切换）</h3>
                         <img id="new-image" src="{% static 'img/300x200.svg' %}" alt="New Image">
                         <img id="hist-image" src="{% static 'img/300x200.svg' %}" alt="New Image">
                     </div>
@@ -532,14 +545,14 @@
                     </div>
 
                     <div class="true-false-container" style="margin-left: 100px;">
-                        <h3>分类判断是否正确按钮</h3>
-                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 30px;">修改判断</button>
+                        <h3></h3>
+                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 80px;">修改判断</button>
                         <button id="correct_button" class="button" onclick="save_change(true)" style="margin-right: 30px;">确认正确</button>
                     </div>
                 </div>
 
                 <div class="image-container">
-                    <h3><a href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面的链接</a></h3>
+{#                    <h3><a href="{% url 'directory_detail_saved' directory_name 'true' %}">前往已判页面的链接</a></h3>#}
                     <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
                 </div>
             </div>

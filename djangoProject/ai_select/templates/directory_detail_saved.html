@@ -56,10 +56,47 @@
                             <a href="" download>Download Original Image</a>
                         </div>
                     </div>
-                    <div class="true-false-container" style="margin-left: 100px;">
 
-                        <span id="saved_mark_${current_index}">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 120px;">修改判断</button>
+                    <div style="display: flex;">
+                        <div class="image-comment-container">
+                            <textarea id="image-comment_${current_index}" rows="2" cols="50"></textarea>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row;margin-left: 100px;">
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_REVIEW_${current_index}" name="new_third_column_${current_index}" value="REVIEW" >
+                                <label for="new_REVIEW_${current_index}" id="new_REVIEW_label_${current_index}">REVIEW</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_FALSE_${current_index}" name="new_third_column_${current_index}" value="FALSE" >
+                                <label for="new_FALSE_${current_index}" id="new_FALSE_label_${current_index}">FALSE</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_UNDETECT_${current_index}" name="new_third_column_${current_index}" value="UNDETECT" >
+                                <label for="new_UNDETECT_${current_index}" id="new_UNDETECT_label_${current_index}">UNDETECT</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_TRUE_${current_index}" name="new_third_column_${current_index}" value="TRUE" >
+                                <label for="new_TRUE_${current_index}" id="new_TRUE_label_${current_index}">TRUE</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_LINE_${current_index}" name="new_third_column_${current_index}" value="LINE" >
+                                <label for="new_LINE_${current_index}" id="new_LINE_label_${current_index}">LINE</label>
+                            </div>
+
+                        </div>
+
+                        <div class="true-false-container" style="margin-left: 100px;">
+                            <h3></h3>
+                            <span id="saved_mark">✅</span><button id="modify_button" class="button" onclick="save_change(${current_index})" style="margin-right: 120px;">修改判断</button>
+                        </div>
                     </div>
+
                     <div id="divider_${current_index}" style=" border-top:2px solid #999;border-bottom:1px dashed #999; margin:15px 0;"></div>
                 </div>
             `);
@@ -79,18 +116,28 @@
                  switch (row["Category"]) {
                      case 'FALSE':
                          categoryColor = color_false;
+                         $('#new_FALSE_'+current_index).prop('checked', true);
+                         $('#new_FALSE_label_'+current_index).css("color", categoryColor);
                          break;
                      case 'LINE':
                          categoryColor = color_line;
+                         $('#new_LINE_'+current_index).prop('checked', true);
+                         $('#new_LINE_label_'+current_index).css("color", categoryColor);
                          break;
                      case 'REVIEW':
                          categoryColor = color_review;
+                         $('#new_REVIEW_'+current_index).prop('checked', true);
+                         $('#new_REVIEW_label_'+current_index).css("color", categoryColor);
                          break;
                      case 'TRUE':
                          categoryColor = color_true;
+                         $('#new_TRUE_'+current_index).prop('checked', true);
+                         $('#new_TRUE_label_'+current_index).css("color", categoryColor);
                          break;
                      case 'UNDETECT':
                          categoryColor = color_undetect;
+                         $('#new_UNDETECT_'+current_index).prop('checked', true);
+                         $('#new_UNDETECT_label_'+current_index).css("color", categoryColor);
                          break;
                      default:
                          categoryColor = 'white';
@@ -124,6 +171,7 @@
                 $('#filename_'+current_index).text('行号:[ ' + row["row_number"] + " ]   文件名: {" + row["Filename"] + '}  '
                     +displayChar+ '  类别：[' + row["Category"]+']' + '  用户：[' + row["username"]+']' + '  备注：[' + row["comment"]+']');
                 $('#filename_'+current_index).css('color', categoryColor);
+                $('#image-comment_'+current_index).text(row["comment"]);
                  // 获取概率值
                  let probabilities = row["Probabilities"];
                  // 检查 probabilities 是否为字符串并转换为数组
@@ -276,6 +324,74 @@
              $('#new-hist-header-text_'+c_index).text('新图 🌟 ');
             }
         }
+        function update_category_count() {
+
+            // 更新third_column 迭代third_column, 重新计数
+            const category_column_values = excelData.map(row => row['Category']);
+            let grouped_third_column = {'REVIEW': 0,'FALSE': 0,'UNDETECT': 0,'TRUE': 0,'LINE': 0,}
+
+            for (let i = 0; i < category_column_values.length; i++) {
+             const row = excelData[i];
+             const row_edit = row['username']!== undefined && row['username']!== null && row['username']!== "";
+             if (row_edit && category_column_values[i] in grouped_third_column) {
+                 grouped_third_column[category_column_values[i]] += 1;
+             } else {
+
+             }
+            }
+            for (const key in grouped_third_column) {
+             $('#label_'+key).text(key + " [ " + grouped_third_column[key]+ " ]");
+            }
+            console.log(grouped_third_column);
+        }
+
+        function save_change(save_index) {
+            const new_radioValue = $('input[name="new_third_column_' + save_index+'"]:checked').val();
+            const new_comment = $('#image-comment_'+save_index).val();
+            const row = excelData[save_index];
+            const old_radioValue = $('input[name="third_column"]:checked').val();
+            $.ajax({
+                 url: '{% url "save_change" %}',
+                 type: 'POST',
+                 data: JSON.stringify({ row_filename: row["Filename"], row_index: save_index,
+                     type_value: new_radioValue, comment_txt: new_comment, directory_name: "{{ directory_name }}" }),
+                 contentType: 'application/json',
+                 success: function(response) {
+                    excelData[save_index]['Category']= new_radioValue;
+                    excelData[save_index]['username']= '{{ user.username }}';
+                    update_category_count();
+                    const default_select_radio = $('input[name="third_column"][value="' + old_radioValue + '"]');
+                    default_select_radio.prop('checked', true);
+                    default_select_radio.click();
+
+                     $('#row_status_id_'+save_index).text('✅');
+                     $.toast({heading: 'Success', loader: false,
+                         text: '已保存',
+                         position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000,stack: 6
+                     });
+
+                     {#const $editButton = $('#modify_button');#}
+                     {#const $target = $('#row_status_id_' + save_index);#}
+                     {#const initialSpan = createRandomSpan( $editButton.offset().left,  $editButton.offset().top);#}
+                     {##}
+                     {#console.log($editButton.offset().left);#}
+                     {#console.log($editButton.offset().top);#}
+                     {#console.log($target.offset().left);#}
+                     {#console.log($target.offset().top);#}
+                     {#animateSpan(initialSpan, $target.offset().left, $target.offset().top);#}
+                 },
+                 error: function(xhr, status, error) {
+                     console.error("Error fetching static image path:", error);
+                     console.error("Error fetching static image path:", xhr);
+                     console.error("Error fetching static image path:", status);
+                     $.toast({
+                         heading: 'Error',
+                         text: "保存失败 : " + xhr.responseText,
+                         position: 'top-right',loaderBg: '#ff6849',icon: 'error',hideAfter: 30000,stack: 6
+                     });
+                }
+            });
+        }
         $(document).ready(function() {
             var excelData = window.excelData;
             if (excelData && excelData.length > 0) {
@@ -347,7 +463,7 @@
                 {% for item, count in third_column.items %}
                     <div style="margin-right: 10px;">
                         <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="radio_click_init()">
-                        <label for="{{ item }}">{{ item }} [{{ count }}]</label>
+                        <label id="label_{{ item }}" for="{{ item }}">{{ item }} [{{ count }}]</label>
                     </div>
                 {% endfor %}
             <span id="to_saved_link" style="margin-left: 30%;"><strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail' directory_name 'false' %}">返回未判页面</a></strong></span>

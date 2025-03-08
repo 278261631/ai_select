@@ -89,7 +89,7 @@ def directory_detail_view(request, directory_name, save_list):
             print(f"备份文件 {excel_file_path} <- {src_excel_file_path}")
             shutil.copy(src_excel_file_path, excel_file_path)
 
-        df_src = pd.read_excel(src_excel_file_path)
+        df_src = pd.read_excel(src_excel_file_path, dtype={'Category': str})
         df_src = df_src.fillna("")
         for row_index, row in df_src.iterrows():
             # 检查row['Category']的类型是不是布尔类型
@@ -99,7 +99,7 @@ def directory_detail_view(request, directory_name, save_list):
         src_excel_data = df_src.to_dict(orient='records')  # 将DataFrame转换为字典列表
 
 
-        df = pd.read_excel(excel_file_path)
+        df = pd.read_excel(excel_file_path, dtype={'Category': str})
         # 替换所有NaN值为空字符串
         # df = df.fillna("{'false': '0.0%', 'line': '0.0%', 'review': '0.0%', 'true': '0.0%'}")
         # df = df.fillna("-")
@@ -229,7 +229,7 @@ def save_change(request):
 
             # 读取Excel文件并提取第三列内容
             if os.path.exists(excel_file_path):
-                df = pd.read_excel(excel_file_path)
+                df = pd.read_excel(excel_file_path, dtype={'Category': str})
                 df = df.fillna("")
 
                 fn = df.at[row_index, 'Filename']
@@ -247,6 +247,7 @@ def save_change(request):
                     if 'username' not in df.columns:
                         df['username'] = ''
                     df.at[row_index, 'username'] = request.user.username
+                    df['Category'] = df['Category'].astype(str)
                     df.to_excel(excel_file_path, index=False)
 
                     jpg_file_path = os.path.join(directory_path, old_type_value_path, fn)

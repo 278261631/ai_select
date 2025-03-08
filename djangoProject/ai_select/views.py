@@ -96,8 +96,11 @@ def directory_detail_view(request, directory_name, save_list):
             if isinstance(row['Category'], bool):
                 if not row['Category']:
                     df_src.at[row_index, 'Category'] = "FALSE"
+            if row['Category'].lower() == 'false' and row['Category'] != 'FALSE':
+                df_src.at[row_index, 'Category'] = "FALSE"
+            if row['Category'].lower() == 'true' and row['Category'] != 'TRUE':
+                df_src.at[row_index, 'Category'] = "TRUE"
         src_excel_data = df_src.to_dict(orient='records')  # 将DataFrame转换为字典列表
-
 
         df = pd.read_excel(excel_file_path, dtype={'Category': str})
         # 替换所有NaN值为空字符串
@@ -112,9 +115,16 @@ def directory_detail_view(request, directory_name, save_list):
                 if not row['Category']:
                     df.at[row_index, 'Category'] = "FALSE"
                     need_fix_bool = True
+            if row['Category'].lower() == 'false' and row['Category'] != 'FALSE':
+                df.at[row_index, 'Category'] = "FALSE"
+                need_fix_bool = True
+            if row['Category'].lower() == 'true' and row['Category'] != 'TRUE':
+                df.at[row_index, 'Category'] = "TRUE"
+                need_fix_bool = True
 
         if need_fix_bool:
             print(f"需要修复bool类型 {excel_file_path}")
+            df['Category'] = df['Category'].astype(str)
             df.to_excel(excel_file_path, index=False)
 
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
@@ -133,6 +143,7 @@ def directory_detail_view(request, directory_name, save_list):
             excel_data.append(item)
         if need_update:
             print(f"更新 {excel_file_path}")
+            df['Category'] = df['Category'].astype(str)
             df.to_excel(excel_file_path)
 
         # 添加序列号
@@ -231,6 +242,7 @@ def save_change(request):
             if os.path.exists(excel_file_path):
                 df = pd.read_excel(excel_file_path, dtype={'Category': str})
                 df = df.fillna("")
+                print(df.at[row_index, 'Category'])
 
                 fn = df.at[row_index, 'Filename']
                 # 转为小写

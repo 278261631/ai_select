@@ -82,7 +82,7 @@ def directory_detail_view(request, directory_name, save_list):
         return render(request, '404.html')  # 或者自定义错误页面
     src_excel_file_path = os.path.join(directory_path, f'{settings.EXCEL_FILE_NAME}')
     items = os.listdir(directory_path)
-
+    df = None
     # 读取Excel文件并提取第三列内容
     if os.path.exists(src_excel_file_path):
         if not os.path.exists(excel_file_path):
@@ -155,9 +155,18 @@ def directory_detail_view(request, directory_name, save_list):
         'TRUE': 0,
         'LINE': 0,
     }
-    for item in third_column:
+    for i, item in enumerate(third_column):
+        row_edit = False
+        if df.__contains__('username'):
+            user_name = df.at[i, 'username']
+            row_edit = user_name and len(user_name) > 0
         if item in grouped_third_column:
-            grouped_third_column[item] += 1
+            if save_list_bool:
+                if row_edit:
+                    grouped_third_column[item] += 1
+            else:
+                if not row_edit:
+                    grouped_third_column[item] += 1
         else:
             grouped_third_column[item] = 1
     print(grouped_third_column)

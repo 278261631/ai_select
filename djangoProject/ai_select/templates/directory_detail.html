@@ -213,11 +213,15 @@
             // 更新third_column 迭代third_column, 重新计数
             const category_column_values = excelData.map(row => row['Category']);
             let grouped_third_column = {'REVIEW': 0,'FALSE': 0,'UNDETECT': 0,'TRUE': 0,'LINE': 0,}
+
+
             for (let i = 0; i < category_column_values.length; i++) {
-             if (category_column_values[i] in grouped_third_column) {
+             const row = excelData[i];
+             const row_edit = row['username']!== undefined && row['username']!== null && row['username']!== "";
+             if ((!row_edit) && category_column_values[i] in grouped_third_column) {
                  grouped_third_column[category_column_values[i]] += 1;
              } else {
-                 grouped_third_column[category_column_values[i]] = 1;
+
              }
             }
             for (const key in grouped_third_column) {
@@ -232,6 +236,10 @@
             navigate("next");
         }
         function save_change(auto_next) {
+            if (current_index === -1) {
+                $.toast({heading: 'Warn', loader: false, loaderBg: '#ff6849', text: '这一行不能编辑['+ current_index +']', showHideTransition: 'slide', icon: 'warning', hideAfter: 3000, position: 'top-right'});
+                return;
+            }
             const new_radioValue = $('input[name="new_third_column"]:checked').val();
             const new_comment = $('#image-comment').val();
             const row = excelData[current_index];
@@ -243,6 +251,7 @@
                  contentType: 'application/json',
                  success: function(response) {
                     excelData[current_index]['Category']= new_radioValue;
+                    excelData[current_index]['username']= '{{ user.username }}';
                     update_category_count();
 
                      $('#row_status_id_'+current_index).text('✅');
@@ -334,6 +343,7 @@
                     $('#hist-image').attr('src', '{% static "img/300x200.svg" %}');
                     $('.download-container').empty();
                     $('.download-container').append(`<button class="btn btn-primary">下载 [-]</button>`);
+                    $('#column-content').empty();
                     $.toast({heading: '',text: "没有找到下一个 ["+radioValue+"]",loader: false,
                         position: 'top-right',icon: 'warning',hideAfter: 3000
                     });
@@ -369,14 +379,14 @@
 
         $(document).ready(function() {
             {#console.log("1111: onload");#}
-            var excelData = window.excelData;
+            const excelData = window.excelData;
             if (excelData && excelData.length > 0) {
                 for (let i = 0; i < excelData.length; i++) {
                     const row = excelData[i];
-                    {#console.log("Row " + (i + 1) + ": ", row);#}
+                    console.log("Row " + i + ": ", row);
                     // 判断 row["username"] 是否存在且长度大于0
                     const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
-                    $('#row_status-content').append('<span id="row_status_id_' + row["row_number"] + '" style="display: inline-block; width: 1em;">' + displayChar + '</span>');
+                    $('#row_status-content').append('<span id="row_status_id_' + i + '" style="display: inline-block; width: 1em;">' + displayChar + '</span>');
                     if((i+1)%5 == 0) {
                         $('#row_status-content').append('<span style="display: inline-block; width: 1em;"> ' + '</span>');
                     }
@@ -546,7 +556,7 @@
 
                     <div class="true-false-container" style="margin-left: 100px;">
                         <h3></h3>
-                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 80px;">修改判断</button>
+                        <span id="saved_mark">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 120px;">修改判断</button>
                         <button id="correct_button" class="button" onclick="save_change(true)" style="margin-right: 30px;">确认正确</button>
                     </div>
                 </div>

@@ -56,6 +56,10 @@
                             <a href="" download>Download Original Image</a>
                         </div>
                     </div>
+                    <div class="true-false-container" style="margin-left: 100px;">
+
+                        <span id="saved_mark_${current_index}">✨✅</span><button id="modify_button" class="button" onclick="save_change(true)" style="margin-right: 120px;">修改判断</button>
+                    </div>
                     <div id="divider_${current_index}" style=" border-top:2px solid #999;border-bottom:1px dashed #999; margin:15px 0;"></div>
                 </div>
             `);
@@ -346,7 +350,7 @@
                         <label for="{{ item }}">{{ item }} [{{ count }}]</label>
                     </div>
                 {% endfor %}
-            <span id="to_saved_link" style="margin-left: 30%;"><strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail' directory_name 'false' %}">前往未判页面</a></strong></span>
+            <span id="to_saved_link" style="margin-left: 30%;"><strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail' directory_name 'false' %}">返回未判页面</a></strong></span>
             </form>
 
             <div id="content-main">

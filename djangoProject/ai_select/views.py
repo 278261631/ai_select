@@ -196,6 +196,7 @@ def directory_detail_view(request, directory_name, save_list):
 @login_required
 def get_image_data(request):
     if request.method == 'POST':
+        a_img_value = ''
         try:
             data = json.loads(request.body)
             a_img_value = data.get('a_img_value')
@@ -208,13 +209,15 @@ def get_image_data(request):
             print(a_img_value)
 
             if not os.path.exists(a_img_value):
-                return JsonResponse({'error': 'Image not found'}, status=404)
+                print(f'error : {a_img_value} not found')
+                return JsonResponse({'error': f'Image not found {a_img_value}'}, status=404)
 
             with open(a_img_value, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
             return JsonResponse({'image_data': encoded_string})
         except Exception as e:
+            print(f'error: {a_img_value}')
             return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)

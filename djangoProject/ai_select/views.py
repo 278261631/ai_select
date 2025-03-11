@@ -144,7 +144,7 @@ def directory_detail_view(request, directory_name, save_list):
         if need_update:
             print(f"更新 {excel_file_path}")
             df['Category'] = df['Category'].astype(str)
-            df.to_excel(excel_file_path)
+            df.to_excel(excel_file_path, index=False)
 
         # 添加序列号
         for i, item in enumerate(excel_data, start=1):

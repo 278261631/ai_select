@@ -88,6 +88,9 @@ def directory_detail_view(request, directory_name, save_list):
         if not os.path.exists(excel_file_path):
             print(f"备份文件 {excel_file_path} <- {src_excel_file_path}")
             shutil.copy(src_excel_file_path, excel_file_path)
+        else:
+            # 对比 src_excel_file_path 和 excel_file_path 的第一列, 如果excel_file_path没有, 则添加整行到excel_file_path
+            sync_excel_rows(src_excel_file_path, excel_file_path)
 
         df_src = pd.read_excel(src_excel_file_path, dtype={'Category': str})
         df_src = df_src.fillna("")
@@ -129,22 +132,22 @@ def directory_detail_view(request, directory_name, save_list):
 
         excel_data = df.to_dict(orient='records')  # 将DataFrame转换为字典列表
 
-        #  对比excel_data和src_excel_data, 如果src_excel_data 有 excel_data中没有的项，则添加到excel_data中
-        need_update = False
-        for item in src_excel_data:
-            i_exists = False
-            for j_item in excel_data:
-                if j_item['Filename'] == item['Filename']:
-                    i_exists = True
-                    break
-            if i_exists:
-                continue
-            need_update = True
-            excel_data.append(item)
-        if need_update:
-            print(f"更新 {excel_file_path}")
-            df['Category'] = df['Category'].astype(str)
-            df.to_excel(excel_file_path, index=False)
+        # #  对比excel_data和src_excel_data, 如果src_excel_data 有 excel_data中没有的项，则添加到excel_data中
+        # need_update = False
+        # for item in src_excel_data:
+        #     i_exists = False
+        #     for j_item in excel_data:
+        #         if j_item['Filename'] == item['Filename']:
+        #             i_exists = True
+        #             break
+        #     if i_exists:
+        #         continue
+        #     need_update = True
+        #     excel_data.append(item)
+        # if need_update:
+        #     print(f"更新 {excel_file_path}")
+        #     df['Category'] = df['Category'].astype(str)
+        #     df.to_excel(excel_file_path, index=False)
 
         # 添加序列号
         for i, item in enumerate(excel_data, start=1):
@@ -285,3 +288,28 @@ def save_change(request):
             return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def sync_excel_rows(src_excel_file_path, excel_file_path):
+    # 读取源文件和目标文件
+    src_df = pd.read_excel(src_excel_file_path)
+    target_df = pd.read_excel(excel_file_path)
+
+    # 提取第一列数据（假设列名相同）
+    src_ids = set(src_df.iloc[:, 0])  # 第一列的所有值
+    target_ids = set(target_df.iloc[:, 0])
+
+    # 找出源文件有但目标文件没有的ID
+    missing_ids = src_ids - target_ids
+
+    # 筛选需要新增的行
+    new_rows = src_df[src_df.iloc[:, 0].isin(missing_ids)]
+
+    if not new_rows.empty:
+        # 追加新行并保存
+        updated_df = pd.concat([target_df, new_rows], ignore_index=True)
+        updated_df['Category'] = updated_df['Category'].astype(str)
+        updated_df.to_excel(excel_file_path, index=False)
+        print(f"{excel_file_path}  新增了 {len(new_rows)} 行数据")
+        return f"新增了 {len(new_rows)} 行数据"
+    return "没有需要新增的数据"

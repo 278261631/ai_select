@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <title>Directory Detail</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/responsive.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.toast.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/dark_mode.css' %}">
+    <style>
+      .border-animation {border: 2px solid transparent;animation: borderPulse 4s infinite;}
+      @keyframes borderPulse {0% { border-color: #1d9b1e; } 50% { border-color: #c835e8; } 100% { border-color: #ecb21c; }}
+    </style>
+    <script src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.toast.min.js' %}"></script>
+    <script src="{% static 'admin/js/theme.js' %}"></script>
+    <script src="{% static 'admin/js/jquery.init.js' %}"></script>
+    <script src="{% static 'admin/js/core.js' %}"></script>
+    <script src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
+    <script src="{% static 'admin/js/actions.js' %}"></script>
+    <script src="{% static 'admin/js/urlify.js' %}"></script>
+    <script src="{% static 'admin/js/prepopulate.js' %}"></script>
+    <script src="{% static 'admin/js/vendor/xregexp/xregexp.min.js' %}"></script>
+
+    <script>
+        const $ = django.jQuery;
+        window.excelData = {{ excel_data|safe }};
+        const color_false = `rgba(155, 10, 10, 1)`;
+        const color_line = `rgba(200, 150, 0, 1)`;
+        const color_review = `rgba(10, 150, 200, 1)`;
+        const color_true = `rgba(0, 150, 0, 1)`;
+        const color_undetect = `rgb(191, 99, 241)`;
+
+        function clear_all() {
+            // 删除所有id前缀是 image_items_ 开头的 div
+            $('[id^="image_items_"]').remove();
+        }
+
+        function showColumn(current_index) {
+            // 新增代码：在 image_items 下方增加一个新的 div，并赋予新的 id，id 中包含 index
+            $('#div_back').before(`
+                 <div id="image_items_${current_index}">
+                    <div id="image-container_${current_index}">
+                        <div style="display: inline-block; margin-right: 20px;">
+                            <h3 id="filename_${current_index}">静态图</h3>
+                            <img id="static-image_${current_index}" src="https://placehold.co/300x200" alt="Static Image">
+                        </div>
+                        <div style="display: inline-block;">
+                            <h3><span id="new-hist-header-text_${current_index}"></span>（鼠标点击、键盘"上" 切换）</h3>
+                            <img id="new-image_${current_index}" src="https://placehold.co/300x200" alt="New Image">
+                            <img id="hist-image_${current_index}" src="https://placehold.co/300x200" alt="New Image">
+                        </div>
+                    </div>
+                    <div style="display: flex;">
+                        <div id="Probabilities-container_${current_index}" style="display: flex; flex-direction: row;"></div>
+                        <div id="download-container_${current_index}" style="margin-left: 20px;">
+                            <h3>下载原图（链接）</h3>
+                            <a href="" download>Download Original Image</a>
+                        </div>
+                    </div>
+
+                    <div style="display: flex;">
+                        <div class="image-comment-container">
+                            <textarea id="image-comment_${current_index}" rows="2" cols="50"></textarea>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row;margin-left: 100px;">
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_REVIEW_${current_index}" name="new_third_column_${current_index}" value="REVIEW" >
+                                <label for="new_REVIEW_${current_index}" id="new_REVIEW_label_${current_index}">REVIEW(变星)</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_FALSE_${current_index}" name="new_third_column_${current_index}" value="FALSE" >
+                                <label for="new_FALSE_${current_index}" id="new_FALSE_label_${current_index}">FALSE(假目标)</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_UNDETECT_${current_index}" name="new_third_column_${current_index}" value="UNDETECT" >
+                                <label for="new_UNDETECT_${current_index}" id="new_UNDETECT_label_${current_index}">UNDETECT</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_TRUE_${current_index}" name="new_third_column_${current_index}" value="TRUE" >
+                                <label for="new_TRUE_${current_index}" id="new_TRUE_label_${current_index}">TRUE(真源)</label>
+                            </div>
+
+                            <div style="margin-right: 10px;margin-top: 10px;">
+                                <input type="radio" id="new_LINE_${current_index}" name="new_third_column_${current_index}" value="LINE" >
+                                <label for="new_LINE_${current_index}" id="new_LINE_label_${current_index}">LINE(亮线干扰)</label>
+                            </div>
+
+                        </div>
+
+                        <div class="true-false-container" style="margin-left: 100px;">
+                            <h3></h3>
+                            <span id="saved_mark">✅</span><button id="modify_button" class="button" onclick="save_change(${current_index})" style="margin-right: 120px;">修改判断</button>
+                        </div>
+                    </div>
+
+                    <div id="divider_${current_index}" style=" border-top:2px solid #999;border-bottom:1px dashed #999; margin:15px 0;"></div>
+                </div>
+            `);
+
+            const excelData = window.excelData;
+            console.log("showColumn "  + " " + current_index);
+            const radioValue = $('input[name="third_column"]:checked').val();
+            console.log("radio: " + radioValue);
+            if (excelData && excelData.length > 0) {
+                const row = excelData[current_index];
+                console.log("row:", row)
+
+                 console.log("navigate "  + " " + current_index);
+                 // 根据 row["Category"] 设置 column-content 的背景颜色
+                 let categoryColor = '';
+                 console.log("row['Category']:", row["Category"])
+                 switch (row["Category"]) {
+                     case 'FALSE':
+                         categoryColor = color_false;
+                         $('#new_FALSE_'+current_index).prop('checked', true);
+                         $('#new_FALSE_label_'+current_index).css("color", categoryColor);
+                         break;
+                     case 'LINE':
+                         categoryColor = color_line;
+                         $('#new_LINE_'+current_index).prop('checked', true);
+                         $('#new_LINE_label_'+current_index).css("color", categoryColor);
+                         break;
+                     case 'REVIEW':
+                         categoryColor = color_review;
+                         $('#new_REVIEW_'+current_index).prop('checked', true);
+                         $('#new_REVIEW_label_'+current_index).css("color", categoryColor);
+                         break;
+                     case 'TRUE':
+                         categoryColor = color_true;
+                         $('#new_TRUE_'+current_index).prop('checked', true);
+                         $('#new_TRUE_label_'+current_index).css("color", categoryColor);
+                         break;
+                     case 'UNDETECT':
+                         categoryColor = color_undetect;
+                         $('#new_UNDETECT_'+current_index).prop('checked', true);
+                         $('#new_UNDETECT_label_'+current_index).css("color", categoryColor);
+                         break;
+                     default:
+                         categoryColor = 'white';
+                  }
+                {# 保存Category的值到 #image_items_'+current_index 的data属性  #}
+                $('#image_items_'+current_index).data('category', row["Category"]); // todo 更新excel后还要更新这个
+
+                const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
+                {#if (!row["username"] || row["username"].length === 0){#}
+                {#    $('#image_items_'+current_index).hide();#}
+                {#    console.log("hide 0 "  + " " + current_index + " " + radioValue + row["Category"]);#}
+                {#    return;#}
+                {# }#}
+                console.log("hide 1 "  + " " + current_index + " " + radioValue + row["Category"]);
+
+                if (radioValue) {
+                    if (radioValue !== row["Category"]) {
+                        $('#image_items_'+current_index).hide();
+                        console.log("hide "  + " " + current_index + " " + radioValue + row["Category"]);
+                        return;
+                    }
+                }else{}
+                {#$("#image_items_"+current_index).addClass("border-animation");#}
+                console.log("hide 3 "  + " " + current_index + " " + radioValue + row["Category"]);
+                $('#filename_'+current_index).text('行号:[ ' + row["row_number"] + " ]   文件名: {" + row["Filename"] + '}  '
+                    +displayChar+ '  类别：[' + row["Category"]+']' + '  用户：[' + row["username"]+']' + '  备注：[' + row["comment"]+']');
+                $('#filename_'+current_index).css('color', categoryColor);
+                $('#image-comment_'+current_index).text(row["comment"]);
+                 // 获取概率值
+                 let probabilities = row["Probabilities"];
+                 // 检查 probabilities 是否为字符串并转换为数组
+                 if (typeof probabilities === 'string') {
+                     // 替换probabilities 的 '  为 ''
+                     probabilities = probabilities.replace(/'/g, '"');
+                     {#console.log("Replaced probabilities:", probabilities);#}
+
+                     try {
+                         probabilities = JSON.parse(probabilities);
+                     } catch (e) {
+                         console.error(probabilities);
+                         console.error("Error parsing probabilities JSON:", e);
+                         probabilities = [];
+                     }
+                 }
+                 {#console.log("Probabilities:", probabilities);#}
+                 // 显示概率值
+                 const probabilitiesContainer = $('#Probabilities-container_'+current_index);
+                 probabilitiesContainer.empty();
+                  // probabilities 是一个json对象，包含四个概率值 获取它们并转换为数字
+                 let probabilitiesArray = [
+                     parseFloat(probabilities.false),
+                     parseFloat(probabilities.B),
+                     parseFloat(probabilities.C),
+                     parseFloat(probabilities.D)
+                 ];
+                 let p_false  = parseFloat(probabilities.false)
+                 let p_line   = parseFloat(probabilities.line)
+                 let p_review = parseFloat(probabilities.review)
+                 let p_true   = parseFloat(probabilities.true)
+
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_false*4 +80}px; height: 20px; background-color: ${color_false};"></div>
+                         <span>false：${p_false.toFixed(2)}</span>
+                     </div>
+                 `);
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_line*4 +80}px; height: 20px; background-color: ${color_line};"></div>
+                         <span>line：${p_line.toFixed(2)}</span>
+                     </div>
+                 `);
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_review*4 +80}px; height: 20px; background-color: ${color_review};"></div>
+                         <span>review：${p_review.toFixed(2)}</span>
+                     </div>
+                 `);
+                 probabilitiesContainer.append(`
+                     <div>
+                         <div style="width: ${p_true*4 +80}px; height: 20px; background-color: ${color_true};"></div>
+                         <span>true：${p_true.toFixed(2)}</span>
+                     </div>
+                 `);
+
+
+                 //在download-container 中给出下载图片的链接， 链接是row["Download_Path"]
+                 const fileName = row["Download_Path"].split('\\').pop().split('/').pop(); // 兼容 Windows 和 Unix 路径分隔符
+                 $('#download-container_'+current_index).empty();
+                 $('#download-container_'+current_index).append(`
+                     <a href="${row["Download_Path"]}" target="_blank">
+                         <button class="btn btn-primary">下载 ${fileName}</button>
+                     </a>
+                 `);
+
+
+
+                 // 新增代码：通过AJAX请求获取静态图路径
+                 $.ajax({
+                     url: '{% url "get_image_data" %}',
+                     type: 'POST',
+                     data: JSON.stringify({ a_img_value: row["A_Image_Path"] }),
+                     contentType: 'application/json',
+                     success: function(response) {
+                         $('#static-image_'+current_index).attr('src', 'data:image/png;base64,'+response.image_data);
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error fetching static image path:", error);
+                     }
+                 });
+                 $.ajax({
+                     url: '{% url "get_image_data" %}',
+                     type: 'POST',
+                     data: JSON.stringify({ a_img_value: row["B_Image_Path"] }),
+                     contentType: 'application/json',
+                     success: function(response) {
+                         $('#new-image_'+current_index).attr('src', 'data:image/png;base64,'+response.image_data);
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error fetching static image path:", error);
+                     }
+                 });
+                 $.ajax({
+                     url: '{% url "get_image_data" %}',
+                     type: 'POST',
+                     data: JSON.stringify({ a_img_value: row["C_Image_Path"] }),
+                     contentType: 'application/json',
+                     success: function(response) {
+                         $('#hist-image_'+current_index).attr('src', 'data:image/png;base64,'+response.image_data);
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error fetching static image path:", error);
+                    }
+                 });
+
+                $('#new-image_'+current_index).show();
+                $('#hist-image_'+current_index).hide();
+                toggle_new_hist_header(current_index);
+                $('#new-image_'+current_index).click(function() {
+                     $('#new-image_'+current_index).toggle();
+                     $('#hist-image_'+current_index).toggle();
+                     toggle_new_hist_header(current_index);
+                     {#console.log("new-image_"+current_index+" clicked")#}
+                });
+
+                $('#hist-image_'+current_index).click(function() {
+                     $('#new-image_'+current_index).toggle();
+                     $('#hist-image_'+current_index).toggle();
+                     toggle_new_hist_header(current_index);
+                     {#console.log("hist-image_"+current_index+" clicked")#}
+                });
+                // 给name= new_third_column_${current_index} 的radio 绑定事件
+                $("[name='new_third_column_"+current_index+"']").click(function() {
+                    // 如果当前选中的radio value 和  $('#image_items_'+current_index).data('category', row["Category"])的 value不一致,则增加css属性
+                    if ($(this).val() !== $('#image_items_'+current_index).data('category')) {
+                        $('#image_items_'+current_index).addClass("border-animation");
+                    } else {
+                        $('#image_items_'+current_index).removeClass("border-animation");
+                    }
+                });
+            }
+        }
+
+        function cycleTheme() {
+            // 切换 html标签的 data-theme="dark" data-theme="light"属性
+            const html = document.querySelector('html');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+            //保存设置到 localStorage
+            localStorage.setItem('theme', html.getAttribute('data-theme'));
+
+        }
+        function radio_click_init() {
+            clear_all();
+            for (let i = 0; i < window.excelData.length; i++){
+                showColumn(i);
+            }
+        }
+        function toggle_new_hist_header(c_index) {
+            if ($('#hist-image_'+c_index).is(':visible')) {
+             $('#new-hist-header-text_'+c_index).text('历史 📜 ');
+            }
+            if ($('#new-image_'+c_index).is(':visible')) {
+             $('#new-hist-header-text_'+c_index).text('新图 🌟 ');
+            }
+        }
+        function update_category_count() {
+
+            // 更新third_column 迭代third_column, 重新计数
+            const category_column_values = excelData.map(row => row['Category']);
+            let grouped_third_column = {'REVIEW': 0,'FALSE': 0,'UNDETECT': 0,'TRUE': 0,'LINE': 0,}
+
+            for (let i = 0; i < category_column_values.length; i++) {
+             const row = excelData[i];
+             const row_edit = row['username']!== undefined && row['username']!== null && row['username']!== "";
+             if (row_edit && category_column_values[i] in grouped_third_column) {
+                 grouped_third_column[category_column_values[i]] += 1;
+             } else {
+
+             }
+            }
+            for (const key in grouped_third_column) {
+             $('#label_'+key).text(key + " [ " + grouped_third_column[key]+ " ]");
+            }
+            console.log(grouped_third_column);
+        }
+
+        function save_change(save_index) {
+            const new_radioValue = $('input[name="new_third_column_' + save_index+'"]:checked').val();
+            const new_comment = $('#image-comment_'+save_index).val();
+            const row = excelData[save_index];
+            const old_radioValue = $('input[name="third_column"]:checked').val();
+            $.ajax({
+                 url: '{% url "save_change" %}',
+                 type: 'POST',
+                 data: JSON.stringify({ row_filename: row["Filename"], row_index: save_index,
+                     type_value: new_radioValue, comment_txt: new_comment, directory_name: "{{ directory_name }}" }),
+                 contentType: 'application/json',
+                 success: function(response) {
+                    excelData[save_index]['Category']= new_radioValue;
+                    excelData[save_index]['username']= '{{ user.username }}';
+                    update_category_count();
+                    const default_select_radio = $('input[name="third_column"][value="' + old_radioValue + '"]');
+                    default_select_radio.prop('checked', true);
+                    default_select_radio.click();
+
+                     $('#row_status_id_'+save_index).text('✅');
+                     $.toast({heading: 'Success', loader: false,
+                         text: '已保存',
+                         position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000,stack: 6
+                     });
+
+                     {#const $editButton = $('#modify_button');#}
+                     {#const $target = $('#row_status_id_' + save_index);#}
+                     {#const initialSpan = createRandomSpan( $editButton.offset().left,  $editButton.offset().top);#}
+                     {##}
+                     {#console.log($editButton.offset().left);#}
+                     {#console.log($editButton.offset().top);#}
+                     {#console.log($target.offset().left);#}
+                     {#console.log($target.offset().top);#}
+                     {#animateSpan(initialSpan, $target.offset().left, $target.offset().top);#}
+                 },
+                 error: function(xhr, status, error) {
+                     console.error("Error fetching static image path:", error);
+                     console.error("Error fetching static image path:", xhr);
+                     console.error("Error fetching static image path:", status);
+                     $.toast({
+                         heading: 'Error',
+                         text: "保存失败 : " + xhr.responseText,
+                         position: 'top-right',loaderBg: '#ff6849',icon: 'error',hideAfter: 30000,stack: 6
+                     });
+                }
+            });
+        }
+        $(document).ready(function() {
+            var excelData = window.excelData;
+            if (excelData && excelData.length > 0) {
+                for (let i = 0; i < excelData.length; i++) {
+                    const row = excelData[i];
+                    {#console.log("Row " + (i + 1) + ": ", row);#}
+                    // 判断 row["username"] 是否存在且长度大于0
+                    const displayChar = row["username"] && row["username"].length > 0 ? '✅' : '✨';
+                    $('#row_status-content').append('<span id="row_status_id_' + row["row_number"] + '" style="display: inline-block; width: 1em;">' + displayChar + '</span>');
+                    if((i+1)%5 == 0) {
+                        $('#row_status-content').append('<span style="display: inline-block; width: 1em;"> ' + '</span>');
+                    }
+                    if((i+1)%50 == 0) {
+                        $('#row_status-content').append('<br/>');
+                    }
+                }
+            }
+
+            $.toast({heading: 'Success', loader: false,
+             text: '已加载{{ directory_name }} [' + window.excelData.length + '] 条数据',
+             position: 'top-right',loaderBg: '#ff6849',icon: 'success',hideAfter: 3000
+            });
+
+            // 新增代码：绑定主题切换按钮
+            $('#theme-toggle').click(function() {
+                cycleTheme();
+            });
+            // 从本地存储中读取主题设置，并应用到页面上
+            const theme = localStorage.getItem('theme');
+            if (theme) {
+                document.querySelector('html').setAttribute('data-theme', theme);
+            }
+            clear_all();
+            for (let i = 0; i < window.excelData.length; i++){
+                showColumn(i);
+            }
+
+            const default_select_radio = $('input[name="third_column"][value="' + "TRUE" + '"]');
+            default_select_radio.prop('checked', true);
+            default_select_radio.click();
+        });
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <div id="branding">
+                <h1 id="site-name"><a href="{% url 'index' %}">HMT AI select</a></h1>
+            </div>
+            <div id="user-tools">
+                {% if user.is_authenticated %}
+                    [<strong>{{ user.username }}</strong>] | <a href="{% url 'admin:logout' %}"> [退出]</a>
+                {% else %}
+                    <a href="{% url 'admin:login' %}">Log in</a>
+                {% endif %}
+                <a id="theme-toggle" style="background: none; border: none; cursor: pointer;">
+                    样式切换
+                </a>
+            </div>
+        </div>
+        <div id="content" class="flex">
+            <div style="display: flex; align-items: center;">
+                <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
+                <h3 style="margin-left: 100px;">被编辑状态</h3>
+                <div id="row_status-content" style="display: inline-block; margin-left:20px;">
+                </div>
+            </div>
+            <form style="display: flex; flex-direction: row;">
+                {% for item, count in third_column.items %}
+                    <div style="margin-right: 10px;">
+                        <input type="radio" id="{{ item }}" name="third_column" value="{{ item }}" onclick="radio_click_init()">
+                        <label id="label_{{ item }}" for="{{ item }}">{{ item }} [{{ count }}]</label>
+                    </div>
+                {% endfor %}
+            <span id="to_saved_link" style="margin-left: 30%;"><strong ><a style="margin-right: 20px; font-size: 14px;" href="{% url 'directory_detail' directory_name 'false' %}">返回未判页面</a></strong></span>
+            </form>
+
+            <div id="content-main">
+
+
+                <div id="div_back">
+                    <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

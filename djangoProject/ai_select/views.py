@@ -73,6 +73,7 @@ def index_view(request):
 @login_required
 def directory_detail_view(request, directory_name, save_list):
     save_list_bool = (save_list.lower() == 'true')
+    save_list_all = (save_list.lower() == 'all')
     directory_root = settings.DIRECTORY_ROOT
     directory_path = os.path.join(directory_root, directory_name)
     # 拼接excel文件路径
@@ -192,6 +193,8 @@ def directory_detail_view(request, directory_name, save_list):
     }
     if save_list_bool:
         return render(request, 'directory_detail_saved.html', context)
+    if save_list_all:
+        return render(request, 'directory_detail_all.html', context)
     return render(request, 'directory_detail.html', context)
 
 

@@ -11,6 +11,7 @@ urlpatterns = [
     path('ai_select/index/', views.index_view, name='index'),
     path('ai_select/directory/<str:directory_name>/<str:save_list>/', views.directory_detail_view, name='directory_detail'),
     path('ai_select/directory_saved/<str:directory_name>/<str:save_list>/', views.directory_detail_view, name='directory_detail_saved'),
+    path('ai_select/directory_all/<str:directory_name>/<str:save_list>/', views.directory_detail_view, name='directory_detail_all'),
     path('ai_select/get_image_data/', views.get_image_data, name='get_image_data'),
     path('ai_select/save_change/', views.save_change, name='save_change'),
 ]

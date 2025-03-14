@@ -62,11 +62,11 @@
                     </div>
 
                     <div style="display: flex;">
-                        <div class="image-comment-container">
+                        <div id="image-comment_div_${current_index}" class="image-comment-container">
                             <textarea id="image-comment_${current_index}" rows="2" cols="50"></textarea>
                         </div>
 
-                        <div style="display: flex; flex-direction: row;margin-left: 100px;">
+                        <div id="new_radios_${current_index}" style="display: flex; flex-direction: row;margin-left: 100px;">
 
                             <div style="margin-right: 10px;margin-top: 10px;">
                                 <input type="radio" id="new_REVIEW_${current_index}" name="new_third_column_${current_index}" value="REVIEW" >
@@ -95,10 +95,7 @@
 
                         </div>
 
-                        <div class="true-false-container" style="margin-left: 100px;">
-                            <h3></h3>
-                            <span id="saved_mark">✅</span><button id="modify_button" class="button" onclick="save_change(${current_index})" style="margin-right: 120px;">修改判断</button>
-                        </div>
+
                     </div>
 
                     <div id="divider_${current_index}" style=" border-top:2px solid #999;border-bottom:1px dashed #999; margin:15px 0;"></div>
@@ -296,12 +293,23 @@
                 // 给name= new_third_column_${current_index} 的radio 绑定事件
                 $("[name='new_third_column_"+current_index+"']").click(function() {
                     // 如果当前选中的radio value 和  $('#image_items_'+current_index).data('category', row["Category"])的 value不一致,则增加css属性
-                    if ($(this).val() !== $('#image_items_'+current_index).data('category')) {
-                        $('#image_items_'+current_index).addClass("border-animation");
-                    } else {
-                        $('#image_items_'+current_index).removeClass("border-animation");
-                    }
+                    {#if ($(this).val() !== $('#image_items_'+current_index).data('category')) {#}
+                    {#    $('#image_items_'+current_index).addClass("border-animation");#}
+                    {# } else { #}
+                    {#    $('#image_items_'+current_index).removeClass("border-animation");#}
+                    {# } #}
+                    update_change_and_animation();
                 });
+                // 给 id=image-comment_的text 增加焦点进入事件
+                $('#image-comment_'+current_index).on('focus', function() {
+                    $('#image-comment_'+current_index).addClass("border-animation");
+                    {# $('#image-comment_div_'+current_index).addClass("border-animation");#}
+                })
+                $('#image-comment_'+current_index).on('blur', function() {
+                    $('#image-comment_'+current_index).removeClass("border-animation");
+                    {# $('image-comment_div_'+current_index).removeClass("border-animation");#}
+                    update_change_and_animation();
+                })
             }
         }
 
@@ -350,6 +358,38 @@
              $('#label_'+key).text(key + " [ " + grouped_third_column[key]+ " ]");
             }
             console.log(grouped_third_column);
+        }
+        function update_change_and_animation() {
+            // 迭代excelData 显示序号和 category
+            let edit_row_counter = 0;
+            for (let i = 0; i < window.excelData.length; i++){
+                let row_edit = false;
+                const row = excelData[i];
+                const new_radioValue = $('input[name="new_third_column_' + i+'"]:checked').val();
+                const new_comment = $('#image-comment_'+i).val();
+                $('#new_radios_'+i).removeClass("border-animation");
+                $('#image-comment_'+i).removeClass("border-animation");
+                if (new_radioValue !== row['Category']){
+                    $('#new_radios_'+i).addClass("border-animation");
+                    row_edit = true;
+                }
+                console.log(i + "   new_radioValue:", new_radioValue, "row['Category']:", row['Category']);
+                console.log(i + "   new_comment:", new_comment, "row['comment']:", row['comment']);
+                if(new_comment !== row['comment']){
+                    $('#image-comment_'+i).addClass("border-animation");
+                    row_edit = true;
+                }
+
+                if (row_edit) {
+                    edit_row_counter++;
+                }
+           }
+
+
+            $.toast({heading: 'Info', loader: false,
+                text: '待提交条数:['+edit_row_counter+']',
+                position: 'top-right',loaderBg: '#ff6849',icon: 'info',hideAfter: 3000,stack: 6
+            });
         }
 
         function save_change(save_index) {
@@ -479,11 +519,15 @@
             <div id="content-main">
 
 
-                <div id="div_back">
-                    <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
-                </div>
+                <div id="div_back"></div>
+            </div>
+            <div class="true-false-container" style="margin-left: 100px;">
+                <span id="saved_mark">✅</span><button id="modify_button" class="button" onclick="save_change()" style="margin-right: 20px;">修改判断</button>
             </div>
 
+            <div id="div_back_bottom">
+                <h2>目录: {{ directory_name }}  <span><a href="{% url 'index' %}">[返回]</a> </span></h2>
+            </div>
         </div>
     </div>
 </body>

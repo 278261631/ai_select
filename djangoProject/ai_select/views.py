@@ -1,5 +1,6 @@
 import json
 import shutil
+import zipfile
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
@@ -76,6 +77,7 @@ def directory_detail_view(request, directory_name, save_list):
     save_list_all = (save_list.lower() == 'all')
     directory_root = settings.DIRECTORY_ROOT
     directory_path = os.path.join(directory_root, directory_name)
+    backup_baseline_and_detected_to_zip(directory_name)
     # 拼接excel文件路径
     excel_file_path = os.path.join(directory_path, f'saved_{settings.EXCEL_FILE_NAME}')
 
@@ -316,3 +318,30 @@ def sync_excel_rows(src_excel_file_path, excel_file_path):
         print(f"{excel_file_path}  新增了 {len(new_rows)} 行数据")
         return f"新增了 {len(new_rows)} 行数据"
     return "没有需要新增的数据"
+
+def backup_baseline_and_detected_to_zip(directory_name):
+    detect_path = os.path.join(settings.DIRECTORY_ROOT, directory_name)
+    baseline_path = os.path.join(settings.BASELINE_ROOT, directory_name)
+    zip_detect_path = os.path.join('E:/HMT-backend_debug/', f'{directory_name}_detect.zip')
+    zip_dbaseline_path = os.path.join('E:/HMT-backend_debug/', f'{directory_name}_baseline.zip')
+    try:
+        # 把detect文件夹压缩到zip文件
+        if not os.path.exists(zip_detect_path):
+            with zipfile.ZipFile(zip_detect_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, dirs, files in os.walk(detect_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        zipf.write(file_path, os.path.relpath(file_path, settings.DIRECTORY_ROOT))
+                        print(f'Added {file_path} to {zip_detect_path}')
+        if not os.path.exists(zip_dbaseline_path):
+            with zipfile.ZipFile(zip_dbaseline_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for root, dirs, files in os.walk(baseline_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        zipf.write(file_path, os.path.relpath(file_path, settings.BASELINE_ROOT))
+                        print(f'Added {file_path} to {zip_dbaseline_path}')
+
+    except Exception as e:
+        print(f'error: {e}')
+        # raise e
+

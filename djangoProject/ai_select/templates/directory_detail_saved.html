@@ -359,10 +359,12 @@
                  success: function(response) {
                     excelData[save_index]['Category']= new_radioValue;
                     excelData[save_index]['username']= '{{ user.username }}';
+                    excelData[save_index]['comment']= new_comment;
                     update_category_count();
                     const default_select_radio = $('input[name="third_column"][value="' + old_radioValue + '"]');
-                    default_select_radio.prop('checked', true);
-                    default_select_radio.click();
+                    {#default_select_radio.prop('checked', true);#}
+                    {#default_select_radio.click();#}
+                    $('#image_items_'+save_index).fadeOut(1000);
 
                      $('#row_status_id_'+save_index).text('✅');
                      $.toast({heading: 'Success', loader: false,

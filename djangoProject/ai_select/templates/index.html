@@ -21,7 +21,9 @@
     <div id="container">
         <div id="header">
             <div id="branding">
-                <h1 id="site-name"><a href="{% url 'index' %}">HMT AI select</a></h1>
+                <h1 id="site-name"><a href="{% url 'index' %}">HMT AI select</a>
+                <span class="help-link" onclick="showHelpModal()">[使用说明]</span>
+                </h1>
             </div>
             <div id="user-tools">
                 {% if user.is_authenticated %}
@@ -57,5 +59,186 @@
         </ul></span>
     </div>
     </div>
+<div id="helpModal" class="modal">
+<div class="modal-content">
+    <span class="close" onclick="closeHelpModal()">&times;</span>
+
+    <div class="section">
+        <h3 class="section-title">一、网页概述</h3>
+        <p class="highlight">本网页基于AI检索目标，用于HMT领域，是PSP（公众超新星搜寻计划）的补充及公众平台兜底操作，由星明天文台打造。</p>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+        <h3 class="section-title">二、网页作用</h3>
+        <ul class="numbered-list">
+            <li>防止人工看图遗漏目标，确保明显目标不被忽视</li>
+            <li>为星明天文台项目的AI识别提供经人工标注的数据集，助力后续AI训练</li>
+            <li>PSP管理员可通过本网页将AI判断的目标与PSP平台公众判断的目标进行比对，并及时反馈</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3 class="section-title">三、网页局限性</h3>
+        <p class="notice">展示目标并非全部，存在遗漏情况，但能够呈现特征明显的目标</p>
+    </div>
+
+    <div class="section">
+        <h3 class="section-title">四、图像分类</h3>
+        <div class="classification">
+            <div class="category">
+                <span class="category-name">review（变星）</span>
+                <p class="category-desc">新图和历史图中都存在的目标，可能是变星或环境因素导致的变化</p>
+            </div>
+            <div class="category">
+                <span class="category-name">false（非真实目标）</span>
+                <p class="category-desc">噪点、鬼影、相机结霜等非真实目标，占绝大多数</p>
+            </div>
+            <!-- 其他分类类似结构... -->
+        </div>
+    </div>
+
+    <div class="section">
+        <h3 class="section-title">五、操作说明</h3>
+        <div class="subsection">
+            <h4 class="subsection-title">未判网页</h4>
+            <ol class="instruction-list">
+                <li>单张输出图像分为五类，默认显示<span class="highlight-text">"true"</span>类</li>
+                <li>建议每日优先完成<span class="highlight-text">"true"</span>类判断</li>
+                <li>判断顺序建议：undetected → review → false → Line</li>
+            </ol>
+        </div>
+
+        <div class="subsection">
+            <h4 class="subsection-title">已判网页</h4>
+            <ul class="instruction-list">
+                <li>按类别列出所有已被判断目标</li>
+                <li>可随时检查、筛选和更改判断结果</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
+<style>    /* 添加CSS样式 */
+    .help-link {
+        font-size: 14px;
+        margin-left: 10px;
+        cursor: pointer;
+        color: #447e9b;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        width: 60%;
+        position: relative;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    }
+
+    .close {
+        position: absolute;
+        right: 15px;
+        top: 5px;
+        font-size: 28px;
+        cursor: pointer;
+    }
+    .section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.section-title {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.subsection-title {
+    color: #34495e;
+    font-size: 16px;
+    margin: 12px 0;
+}
+
+.numbered-list {
+    list-style-type: decimal;
+    padding-left: 25px;
+    line-height: 1.6;
+}
+
+.instruction-list {
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+.category {
+    margin: 10px 0;
+    padding: 10px;
+    border-left: 4px solid #3498db;
+    background: #f0f8ff;
+}
+
+.category-name {
+    font-weight: bold;
+    color: #2980b9;
+}
+
+.highlight {
+    background: #fff3cd;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.highlight-text {
+    color: #c0392b;
+    font-weight: bold;
+}
+
+.notice {
+    color: #d35400;
+    font-weight: 500;
+}
+
+.divider {
+    margin: 25px 0;
+    border: 1px solid #ecf0f1;
+}
+
+.instruction-list li {
+    margin: 8px 0;
+}
+</style>
+
+<script>    // 添加JavaScript控制
+    function showHelpModal() {
+        document.getElementById('helpModal').style.display = 'block';
+    }
+
+    function closeHelpModal() {
+        document.getElementById('helpModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('helpModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
 </body>
 </html>

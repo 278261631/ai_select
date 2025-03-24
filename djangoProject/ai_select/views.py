@@ -77,7 +77,7 @@ def directory_detail_view(request, directory_name, save_list):
     save_list_all = (save_list.lower() == 'all')
     directory_root = settings.DIRECTORY_ROOT
     directory_path = os.path.join(directory_root, directory_name)
-    backup_baseline_and_detected_to_zip(directory_name)
+    # backup_baseline_and_detected_to_zip(directory_name)
     # 拼接excel文件路径
     excel_file_path = os.path.join(directory_path, f'saved_{settings.EXCEL_FILE_NAME}')
 

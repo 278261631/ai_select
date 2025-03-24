@@ -75,7 +75,7 @@
         <ul class="numbered-list">
             <li>防止人工看图遗漏目标，确保明显目标不被忽视</li>
             <li>为星明天文台项目的AI识别提供经人工标注的数据集，助力后续AI训练</li>
-            <li>PSP管理员可通过本网页将AI判断的目标与PSP平台公众判断的目标进行比对，并及时反馈</li>
+            <li>PSP管理员可通过本网页将AI判断的目标与PSP平台公众判断的目标进行比对，对公众平台和AI判断的目标做出评价，并及时反馈给星明天文台负责人</li>
         </ul>
     </div>
 
@@ -89,13 +89,26 @@
         <div class="classification">
             <div class="category">
                 <span class="category-name">review（变星）</span>
-                <p class="category-desc">新图和历史图中都存在的目标，可能是变星或环境因素导致的变化</p>
+                <p class="category-desc">指新图和历史图中都有的目标，可能是某颗星星亮度发生变化被认定为变星，也可能因天气等因素导致亮度变化，只要目标在新图和历史图中都存在，就归为此类</p>
             </div>
             <div class="category">
                 <span class="category-name">false（非真实目标）</span>
-                <p class="category-desc">噪点、鬼影、相机结霜等非真实目标，占绝大多数</p>
+                <p class="category-desc">软件识别的目标为噪点、鬼影、因相机结霜等原因产生的非真正星点的目标，与“true”（真实目标）相对，绝大多数是尖锐噪点以及一些鬼影等</p>
             </div>
-            <!-- 其他分类类似结构... -->
+
+            <div class="category">
+                <span class="category-name">undetected（未检测）</span>
+                <p class="category-desc">软件未识别出的图，每天约10张，需人工识别。大多是识别方框在边缘的图，所以软件没有识别出来</p>
+            </div>
+            <div class="category">
+                <span class="category-name">true（真实目标）</span>
+                <p class="category-desc">是新图有，但是历史图没有的目标，可能是小行星、超新星或者其他瞬变源，是肉眼判断为真实目标，非噪点、鬼影等</p>
+            </div>
+            <div class="category">
+                <span class="category-name">Line（含直线图像）</span>
+                <p class="category-desc">方框内有直线的，多因图像边缘问题、人造卫星脱线、激光等原因导致识别错误</p>
+            </div>
+
         </div>
     </div>
 
@@ -104,17 +117,18 @@
         <div class="subsection">
             <h4 class="subsection-title">未判网页</h4>
             <ol class="instruction-list">
-                <li>单张输出图像分为五类，默认显示<span class="highlight-text">"true"</span>类</li>
-                <li>建议每日优先完成<span class="highlight-text">"true"</span>类判断</li>
-                <li>判断顺序建议：undetected → review → false → Line</li>
+                <li>单张输出图像，分为五类。用户进入默认显示“true”类。建议优先完成<span class="highlight-text">"true"</span>类判断，保证每日判断完毕。判断“true”类目标时，若确定是某编号的小行星、瞬变源，甚至是人造卫星闪光等，最好添加备注说明</li>
+                <li>欢迎对各类别添加备注</li>
+                <li>若有时间，可对除“true”外的其他四类进行判断，建议顺序为：先判断“undetected”，然后是“review”，接着是“false”，最后是“Line”</li>
+                <li>每日工作需清空未判网页，确保每个目标至少被一人查看，网页显示最后查看人</li>
             </ol>
         </div>
 
         <div class="subsection">
             <h4 class="subsection-title">已判网页</h4>
             <ul class="instruction-list">
-                <li>按类别列出所有已被判断目标</li>
-                <li>可随时检查、筛选和更改判断结果</li>
+                <li>按类别列出所有已被用户判断过的目标</li>
+                <li>用户可随时检查、筛选和更改判断结果，网页会显示目标判断人</li>
             </ul>
         </div>
     </div>
@@ -125,7 +139,7 @@
         font-size: 14px;
         margin-left: 10px;
         cursor: pointer;
-        color: #447e9b;
+        color: #fdf70e;
     }
 
     .modal {
@@ -133,19 +147,24 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        right: 0; /* 新增右侧定位 */
+        bottom: 0; /* 新增底部定位 */
         background-color: rgba(0,0,0,0.5);
         z-index: 1000;
     }
 
     .modal-content {
         background-color: #fff;
-        margin: 15% auto;
+        margin: auto;
         padding: 20px;
-        width: 60%;
+        width: 80%;
+        max-width: 1000px;
         position: relative;
+        top: 50%;
+        transform: translateY(-50%);
         box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        max-height: 80vh;
+        overflow-y: auto;
     }
 
     .close {
@@ -156,8 +175,8 @@
         cursor: pointer;
     }
     .section {
-    margin-bottom: 20px;
-    padding: 15px;
+    margin-bottom: 2px;
+    padding: 1px;
     background: #f8f9fa;
     border-radius: 5px;
 }
@@ -215,7 +234,7 @@
 }
 
 .divider {
-    margin: 25px 0;
+    margin: 1px 0;
     border: 1px solid #ecf0f1;
 }
 
